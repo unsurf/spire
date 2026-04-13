@@ -74,7 +74,7 @@ npm run dev
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
 | Database | PostgreSQL via Prisma |
 | Auth | Auth.js (NextAuth v5) |
