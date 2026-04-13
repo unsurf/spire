@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PayCycle {
+  WEEKLY
+  FORTNIGHTLY
+  TWICE_MONTHLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+}
+
+enum AccountCategory {
+  CHEQUE
+  SAVINGS
+  HIGH_GROWTH
+  EMERGENCY
+  INVESTMENT
+  CRYPTO
+  ASSET
+  OTHER
+}
+
+enum SplitType {
+  PERCENTAGE
+  FIXED
+}
+
+model User {
+  id                 String   @id @default(cuid())
+  name               String
+  email              String   @unique
+  passwordHash       String
+  country            String?
+  currency           String?
+  onboardingComplete Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  incomes  Income[]
+  accounts Account[]
+}
+
+model Income {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  amount    Decimal  @db.Decimal(12, 2)
+  cycle     PayCycle
+  lastPaidAt DateTime?
+  // payDay: day-of-week 0–6 (Mon=0) for WEEKLY/FORTNIGHTLY; day-of-month 1–31 for others
+  payDay    Int?
+  // payDay2: second day-of-month for TWICE_MONTHLY (e.g. 15 when payDay=1)
+  payDay2   Int?
+  createdAt DateTime @default(now())
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  splits AccountSplit[]
+}
+
+model Account {
+  id               String          @id @default(cuid())
+  userId           String
+  name             String
+  category         AccountCategory
+  oracleEnabled    Boolean         @default(true)
+  annualGrowthRate Float?
+  createdAt        DateTime        @default(now())
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  splits         AccountSplit[]
+  balanceEntries BalanceEntry[]
+}
+
+model AccountSplit {
+  id        String    @id @default(cuid())
+  incomeId  String
+  accountId String
+  type      SplitType
+  value     Decimal   @db.Decimal(12, 2)
+
+  income  Income  @relation(fields: [incomeId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([incomeId, accountId])
+}
+
+model BalanceEntry {
+  id         String   @id @default(cuid())
+  accountId  String
+  balance    Decimal  @db.Decimal(12, 2)
+  note       String?
+  recordedAt DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
