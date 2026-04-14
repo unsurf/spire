@@ -32,6 +32,7 @@ import {
 } from "./dashboard-client.utils";
 
 const priceSchema = z.record(z.string(), z.number());
+const cachedPricesSchema = z.array(z.tuple([z.string(), z.number()]));
 const historySchema = z.object({
   points: z.array(z.object({ ms: z.number(), date: z.string(), price: z.number() })),
 });
@@ -61,6 +62,17 @@ export default function DashboardClientComponent({
   const [cryptoChartLoading, setCryptoChartLoading] = useState(false);
   const { hidden, toggle: toggleVisibility } = useVisibility();
 
+  // Hydrate live prices from localStorage cache on mount — prevents layout shift
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem("spire_crypto_prices");
+      if (cached) {
+        const parsed = cachedPricesSchema.safeParse(JSON.parse(cached));
+        if (parsed.success) setLiveCryptoPrices(new Map(parsed.data));
+      }
+    } catch {}
+  }, []);
+
   // Bulk live price fetch — one request for all crypto accounts
   useEffect(() => {
     const coinIds = accounts
@@ -72,7 +84,13 @@ export default function DashboardClientComponent({
       .then((r) => r.json())
       .then((data: unknown) => {
         const parsed = priceSchema.safeParse(data);
-        if (parsed.success) setLiveCryptoPrices(new Map(Object.entries(parsed.data)));
+        if (parsed.success) {
+          const entries = Object.entries(parsed.data) as [string, number][];
+          setLiveCryptoPrices(new Map(entries));
+          try {
+            localStorage.setItem("spire_crypto_prices", JSON.stringify(entries));
+          } catch {}
+        }
       })
       .catch(() => {});
   }, [accounts, currency]);

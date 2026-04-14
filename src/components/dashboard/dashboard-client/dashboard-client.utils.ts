@@ -41,6 +41,21 @@ export function buildCryptoChartData(
   }));
 }
 
+export function getCryptoTotalGrowth(
+  account: DashboardAccount,
+  liveCryptoPrices: Map<string, number>,
+): number | null {
+  if (account.category !== "CRYPTO" || !account.coinId || !account.coinQuantity) return null;
+  const livePrice = liveCryptoPrices.get(account.coinId);
+  if (livePrice === undefined) return null;
+  const purchaseEntry = account.balanceEntries[0];
+  if (!purchaseEntry) return null;
+  const purchaseValue = Number(purchaseEntry.balance);
+  if (purchaseValue === 0) return null;
+  const liveValue = parseFloat(account.coinQuantity) * livePrice;
+  return ((liveValue - purchaseValue) / purchaseValue) * 100;
+}
+
 export function getGrowthPercent(account: DashboardAccount): number | null {
   const entries = account.balanceEntries;
   if (entries.length < 2) return null;
@@ -55,8 +70,11 @@ export function getSparklineData(account: DashboardAccount): number[] {
 }
 
 export function getGreeting(hour: number): string {
+  if (hour < 6) return "Good night";
   if (hour < 12) return "Good morning";
+
   if (hour < 17) return "Good afternoon";
+  if (hour < 0) return "Good night";
   return "Good evening";
 }
 
