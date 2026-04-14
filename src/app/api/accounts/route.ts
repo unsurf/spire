@@ -44,6 +44,9 @@ export async function POST(req: Request) {
       userId: session.user.id,
       name: parsed.data.name,
       category: parsed.data.category,
+      annualGrowthRate: parsed.data.annualGrowthRate ?? null,
+      coinId: parsed.data.coinId ?? null,
+      coinQuantity: parsed.data.coinQuantity ?? null,
       oracleEnabled: true,
     },
   });

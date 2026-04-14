@@ -70,6 +70,8 @@ model Account {
   category         AccountCategory
   oracleEnabled    Boolean         @default(true)
   annualGrowthRate Float?
+  coinId           String?
+  coinQuantity     Decimal?        @db.Decimal(18, 8)
   createdAt        DateTime        @default(now())
 
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)

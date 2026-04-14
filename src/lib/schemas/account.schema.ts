@@ -4,6 +4,9 @@ import { AccountCategory } from "@/generated/prisma/client";
 export const createAccountSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   category: z.nativeEnum(AccountCategory),
+  annualGrowthRate: z.number().min(0).max(100).nullable().optional(),
+  coinId: z.string().max(100).nullable().optional(),
+  coinQuantity: z.number().positive().nullable().optional(),
 });
 
 export const updateAccountSchema = z.object({

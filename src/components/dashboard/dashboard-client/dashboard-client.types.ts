@@ -1,8 +1,4 @@
-import type {
-  AccountCategory,
-  PayCycle,
-  SplitType,
-} from "@/generated/prisma/client";
+import type { AccountCategory, PayCycle, SplitType } from "@/generated/prisma/client";
 
 export type DashboardBalanceEntry = {
   id: string;
@@ -28,6 +24,8 @@ export type DashboardAccount = {
   category: AccountCategory;
   oracleEnabled: boolean;
   annualGrowthRate: number | null;
+  coinId: string | null;
+  coinQuantity: string | null;
   balanceEntries: DashboardBalanceEntry[];
   splits: DashboardSplit[];
 };
@@ -39,11 +37,7 @@ export type DashboardClientProps = {
   initialSelectedId: string | null;
 };
 
-export type DashboardAccountGroupKey =
-  | "accounts"
-  | "investments"
-  | "liabilities"
-  | "loan";
+export type DashboardAccountGroupKey = "accounts" | "investments" | "liabilities" | "loan";
 
 export type DashboardAccountGroup = {
   key: DashboardAccountGroupKey;
@@ -63,4 +57,13 @@ export type ChartDataPoint = {
   date: string;
   value?: number;
   proj?: number;
+  isLive?: boolean;
+};
+
+export type NetWorthChartPoint = {
+  idx: number;
+  date: string;
+  value?: number;
+  actual?: number;
+  projected?: number;
 };
