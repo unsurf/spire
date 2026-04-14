@@ -4,9 +4,11 @@ import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import MaskedValue from "@/components/ui/masked-value";
 import Sparkline from "@/components/ui/sparkline";
 import { CHART_COLOR_BALANCE } from "@/lib/constants/chart.constants";
+import { formatCurrency } from "@/lib/currencies";
 import {
   getLiveBalance,
   getGrowthPercent,
+  getCryptoTotalGrowth,
   getSparklineData,
 } from "../dashboard-client/dashboard-client.utils";
 import type { AccountSidebarProps } from "./account-sidebar.types";
@@ -31,8 +33,9 @@ export function AccountSidebar({
 }: AccountSidebarProps) {
   return (
     <aside className="border-edge flex w-72 shrink-0 flex-col border-r">
-      <div className="p-4 pb-2">
-        <div className="bg-surface-raised border-edge mb-3 grid grid-cols-3 rounded-lg border p-1">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+        <div className="bg-surface-raised border-edge grid grid-cols-3 rounded-lg border p-1 flex-1 mr-2">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -49,74 +52,103 @@ export function AccountSidebar({
         </div>
         <button
           onClick={onAddAccount}
-          className="bg-surface-raised border-edge text-on-surface hover:bg-edge mb-1 flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+          aria-label="Add account"
+          className="border-edge text-subtle hover:text-on-surface hover:bg-surface-raised shrink-0 rounded-lg border p-2 transition-colors"
         >
           <Plus size={14} />
-          New
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-        <div className="space-y-1">
+      {/* Groups */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+        <div className="space-y-3">
           {visibleGroups.map((group) => (
             <div key={group.key}>
+              {/* Group header */}
               <button
                 onClick={() => onToggleGroup(group.key)}
-                className="hover:bg-surface-raised flex w-full items-center rounded-md px-2 py-2 transition-colors"
+                className="hover:bg-surface-raised flex w-full items-center rounded-md px-2 py-1.5 transition-colors"
                 aria-label={`${expandedGroups[group.key] ? "Collapse" : "Expand"} ${group.label}`}
               >
-                <span className="text-subtle mr-1">
+                <span className="text-subtle mr-1.5">
                   {expandedGroups[group.key] ? (
-                    <ChevronDown size={14} />
+                    <ChevronDown size={13} />
                   ) : (
-                    <ChevronRight size={14} />
+                    <ChevronRight size={13} />
                   )}
                 </span>
-                <span className="text-on-surface flex-1 text-left text-sm">{group.label}</span>
-                <span className="text-on-surface text-sm font-medium">
+                <span className="text-muted flex-1 text-left text-xs font-medium">
+                  {group.label}
+                </span>
+                <span className="text-muted text-xs font-medium tabular-nums">
                   <MaskedValue amount={group.total} currency={currency} />
                 </span>
               </button>
-              {expandedGroups[group.key] &&
-                group.accounts.map((account) => {
-                  const growth = getGrowthPercent(account);
-                  const sparkData = getSparklineData(account);
-                  const sparkColor =
-                    growth !== null && growth >= 0 ? CHART_COLOR_BALANCE : "#ef4444";
-                  return (
-                    <button
-                      key={account.id}
-                      onClick={() => onSelectAccount(account.id)}
-                      className={`flex w-full items-center justify-between rounded-md py-1.5 pr-2 pl-5 text-left transition-colors ${
-                        selectedAccountId === account.id ? "bg-edge" : "hover:bg-surface-raised"
-                      }`}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <span className="text-muted block truncate text-xs">{account.name}</span>
+
+              {/* Account cards */}
+              {expandedGroups[group.key] && (
+                <div className="mt-1 space-y-1.5">
+                  {group.accounts.map((account) => {
+                    const isSelected = selectedAccountId === account.id;
+                    const growth =
+                      account.category === "CRYPTO"
+                        ? getCryptoTotalGrowth(account, liveCryptoPrices)
+                        : getGrowthPercent(account);
+                    const sparkData = getSparklineData(account);
+                    const sparkColor =
+                      growth !== null && growth >= 0 ? CHART_COLOR_BALANCE : "var(--error)";
+
+                    return (
+                      <button
+                        key={account.id}
+                        onClick={() => onSelectAccount(account.id)}
+                        className={`w-full rounded-xl border px-3 pt-2.5 pb-2.5 text-left transition-all ${
+                          isSelected
+                            ? "border-edge-strong bg-surface-raised"
+                            : "border-edge hover:border-edge-strong hover:bg-surface-raised"
+                        }`}
+                      >
+                        {/* Top row: name + growth */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted truncate text-xs">{account.name}</span>
+                          {growth !== null && (
+                            <span
+                              className={`ml-2 shrink-0 text-[10px] font-medium ${
+                                growth >= 0 ? "text-positive" : "text-error"
+                              }`}
+                            >
+                              {growth >= 0 ? "+" : ""}
+                              {growth.toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Crypto: price per coin */}
+                        {account.category === "CRYPTO" && account.coinId && liveCryptoPrices.get(account.coinId) !== undefined && (
+                          <p className="text-subtle mt-0.5 text-[10px] tabular-nums">
+                            1{account.coinSymbol ? ` ${account.coinSymbol}` : ""} = {formatCurrency(liveCryptoPrices.get(account.coinId)!, currency)}
+                          </p>
+                        )}
+
+                        {/* Balance — the hero */}
+                        <p className="text-on-surface mt-0.5 text-sm font-semibold tabular-nums">
+                          <MaskedValue
+                            amount={getLiveBalance(account, liveCryptoPrices)}
+                            currency={currency}
+                          />
+                        </p>
+
+                        {/* Sparkline spanning full card width */}
                         {sparkData.length >= 2 && (
-                          <div className="mt-0.5">
+                          <div className="mt-1.5">
                             <Sparkline data={sparkData} width={40} height={12} color={sparkColor} />
                           </div>
                         )}
-                      </div>
-                      <div className="ml-2 flex shrink-0 flex-col items-end">
-                        <span className="text-muted text-xs">
-                          <MaskedValue amount={getLiveBalance(account, liveCryptoPrices)} currency={currency} />
-                        </span>
-                        {growth !== null && (
-                          <span
-                            className={`text-xs font-medium ${
-                              growth >= 0 ? "text-positive" : "text-error"
-                            }`}
-                          >
-                            {growth >= 0 ? "+" : ""}
-                            {growth.toFixed(1)}%
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>
