@@ -1,7 +1,8 @@
 "use client";
 
+import NumberFlow from "@number-flow/react";
 import { useVisibility } from "@/lib/visibility-context";
-import { formatCurrency } from "@/lib/currencies";
+import { getCurrency } from "@/lib/currencies";
 
 type Props = {
   amount: number;
@@ -9,16 +10,24 @@ type Props = {
   className?: string;
 };
 
-export default function MaskedValue({
-  amount,
-  currency,
-  className,
-}: Props) {
+export default function MaskedValue({ amount, currency, className }: Props) {
   const { hidden } = useVisibility();
+  const curr = getCurrency(currency);
+
+  if (hidden) {
+    return <span className={className}>{"\u2022\u2022\u2022\u2022\u2022\u2022\u2022"}</span>;
+  }
 
   return (
-    <span className={className}>
-      {hidden ? "\u2022\u2022\u2022\u2022\u2022\u2022\u2022" : formatCurrency(amount, currency)}
-    </span>
+    <NumberFlow
+      value={amount}
+      format={{
+        style: "currency",
+        currency: curr?.code ?? "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }}
+      className={className}
+    />
   );
 }
