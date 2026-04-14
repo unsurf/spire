@@ -4,7 +4,9 @@ A self-hosted financial management platform. Track accounts, income, and long-te
 
 ## Features
 
-- Account tracking across multiple categories (savings, investments, crypto, etc.)
+- Account tracking across multiple categories (savings, investments, loans, and more)
+- **Crypto accounts** — live price tracking via CoinGecko, price history charts (1D/1W/1M/1Y), and real-time portfolio value
+- **High Growth Savings** accounts with configurable interest rate projections
 - Income management with configurable pay cycles and split allocations
 - Balance history and growth projections (Oracle)
 - Fully self-hosted — your data never leaves your server
@@ -15,7 +17,7 @@ A self-hosted financial management platform. Track accounts, income, and long-te
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/your-org/spire.git
+git clone https://github.com/unsurf/spire.git
 cd spire
 
 # 2. Configure environment
@@ -68,6 +70,10 @@ npx prisma migrate dev
 
 # Start the dev server
 npm run dev
+
+# Lint and format
+npm run lint
+npx prettier --write .
 ```
 
 ## Tech Stack
@@ -79,7 +85,9 @@ npm run dev
 | Database | PostgreSQL via Prisma |
 | Auth | Auth.js (NextAuth v5) |
 | Styling | Tailwind CSS v4 |
+| Charts | Recharts |
 | Validation | Zod |
+| Crypto prices | CoinGecko API |
 
 ## Contributing
 
