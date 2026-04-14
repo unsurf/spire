@@ -1,35 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import type { PayCycle, AccountCategory, SplitType } from "@/generated/prisma/client";
-
-type SplitInput = {
-  accountId: string;
-  type: SplitType;
-  value: number;
-};
-
-type IncomeInput = {
-  name: string;
-  amount: number;
-  cycle: PayCycle;
-  lastPaidAt?: string | null;
-  payDay?: number | null;
-  payDay2?: number | null;
-  splits: SplitInput[];
-};
-
-type AccountInput = {
-  name: string;
-  category: AccountCategory;
-};
-
-type OnboardingBody = {
-  country: string;
-  currency: string;
-  incomes: IncomeInput[];
-  accounts: AccountInput[];
-};
+import { onboardingSchema } from "@/lib/schemas/onboarding.schema";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -38,10 +10,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body: OnboardingBody = await req.json();
-    const { country, currency, incomes, accounts } = body;
+    const parsed = onboardingSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+    const { country, currency, incomes, accounts } = parsed.data;
 
-    const userId = session.user.id!;
+    const userId = session.user.id;
 
     await prisma.$transaction(async (tx) => {
       // Update user
