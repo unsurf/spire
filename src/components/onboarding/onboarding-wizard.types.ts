@@ -9,6 +9,7 @@ export type IncomeInput = {
 };
 
 export type AccountInput = {
+  _id: string;
   name: string;
   category: AccountCategory;
 };
@@ -19,7 +20,7 @@ export type SplitInput = {
   value: string;
 };
 
-export type IncomeWithSplits = IncomeInput & { splits: SplitInput[] };
+export type IncomeWithSplits = IncomeInput & { _id: string; splits: SplitInput[] };
 
 export type OnboardingState = {
   country: string;

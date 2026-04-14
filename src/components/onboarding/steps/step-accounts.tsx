@@ -17,7 +17,7 @@ type Props = {
   onBack: () => void;
 };
 
-const emptyAccount = (): AccountInput => ({ name: "", category: "CHEQUE" });
+const emptyAccount = (): AccountInput => ({ _id: crypto.randomUUID(), name: "", category: "CHEQUE" });
 
 export default function StepAccounts({ accounts, onChange, onNext, onBack }: Props) {
   const [list, setList] = useState<AccountInput[]>(
@@ -58,7 +58,7 @@ export default function StepAccounts({ accounts, onChange, onNext, onBack }: Pro
 
       <div className="space-y-3">
         {list.map((account, i) => (
-          <div key={i} className="flex items-center gap-3">
+          <div key={account._id} className="flex items-center gap-3">
             <div className="flex-1">
               <input
                 type="text"

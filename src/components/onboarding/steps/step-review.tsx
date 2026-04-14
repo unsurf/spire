@@ -47,9 +47,9 @@ export default function StepReview({
             Accounts ({state.accounts.length})
           </p>
           <div className="space-y-1">
-            {state.accounts.map((a, i) => (
+            {state.accounts.map((a) => (
               <div
-                key={i}
+                key={a._id}
                 className="flex items-center justify-between text-sm"
               >
                 <span className="text-on-surface">{a.name}</span>
@@ -61,8 +61,8 @@ export default function StepReview({
           </div>
         </div>
 
-        {state.incomes.map((inc, i) => (
-          <div key={i} className="bg-edge/30 rounded-xl p-4 border border-edge">
+        {state.incomes.map((inc) => (
+          <div key={inc._id} className="bg-edge/30 rounded-xl p-4 border border-edge">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-muted uppercase tracking-wide">
                 Income: {inc.name}
@@ -87,7 +87,7 @@ export default function StepReview({
 
                     return (
                       <div
-                        key={si}
+                        key={s.accountIndex}
                         className="flex items-center justify-between text-sm"
                       >
                         <span className="text-muted">

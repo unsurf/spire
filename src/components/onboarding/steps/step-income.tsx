@@ -19,6 +19,7 @@ type Props = {
 };
 
 const emptyIncome = (): IncomeWithSplits => ({
+  _id: crypto.randomUUID(),
   name: "",
   amount: "",
   cycle: "MONTHLY",
@@ -69,7 +70,7 @@ export default function StepIncome({ incomes, onChange, onNext, onBack }: Props)
       <div className="space-y-4">
         {list.map((income, i) => (
           <div
-            key={i}
+            key={income._id}
             className="bg-edge/30 rounded-xl p-4 border border-edge"
           >
             <div className="flex items-start justify-between mb-3">
