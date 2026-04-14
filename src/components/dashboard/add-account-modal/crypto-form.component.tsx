@@ -95,6 +95,7 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
         name: selectedCoin.name,
         category: "CRYPTO",
         coinId: selectedCoin.id,
+        coinSymbol: selectedCoin.symbol.toUpperCase(),
         coinQuantity: qty,
       }),
     });
@@ -124,6 +125,7 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
     }
 
     const { id: accountId, name, category: rawCategory, annualGrowthRate, coinId, coinQuantity } = accountResult.data;
+    const coinSymbol = selectedCoin.symbol.toUpperCase();
     if (!isAccountCategory(rawCategory)) {
       setError("Unexpected response from server");
       setLoading(false);
@@ -168,6 +170,7 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
       oracleEnabled: false,
       annualGrowthRate,
       coinId: coinId ?? null,
+      coinSymbol,
       coinQuantity: coinQuantity !== null ? String(coinQuantity) : null,
       balanceEntries: [
         {

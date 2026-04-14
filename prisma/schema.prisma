@@ -71,6 +71,7 @@ model Account {
   oracleEnabled    Boolean         @default(true)
   annualGrowthRate Float?
   coinId           String?
+  coinSymbol       String?
   coinQuantity     Decimal?        @db.Decimal(18, 8)
   createdAt        DateTime        @default(now())
 

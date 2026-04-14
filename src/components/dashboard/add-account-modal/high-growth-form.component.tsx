@@ -72,6 +72,7 @@ export function HighGrowthForm({ onBack, onClose, onAdded }: HighGrowthFormProps
       oracleEnabled: true,
       annualGrowthRate,
       coinId: null,
+      coinSymbol: null,
       coinQuantity: null,
       balanceEntries: [],
       splits: [],

@@ -25,6 +25,7 @@ export type DashboardAccount = {
   oracleEnabled: boolean;
   annualGrowthRate: number | null;
   coinId: string | null;
+  coinSymbol: string | null;
   coinQuantity: string | null;
   balanceEntries: DashboardBalanceEntry[];
   splits: DashboardSplit[];

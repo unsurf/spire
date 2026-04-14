@@ -38,6 +38,7 @@ type PrismaAccount = {
   oracleEnabled: boolean;
   annualGrowthRate: number | null;
   coinId: string | null;
+  coinSymbol: string | null;
   coinQuantity: { toString(): string } | null;
   balanceEntries: PrismaBalanceEntry[];
   splits: PrismaSplit[];
@@ -77,6 +78,7 @@ export function serialiseDashboardAccounts(accounts: PrismaAccount[]): Dashboard
     oracleEnabled: a.oracleEnabled,
     annualGrowthRate: a.annualGrowthRate,
     coinId: a.coinId,
+    coinSymbol: a.coinSymbol,
     coinQuantity: a.coinQuantity?.toString() ?? null,
     balanceEntries: a.balanceEntries.map((e) => ({
       id: e.id,

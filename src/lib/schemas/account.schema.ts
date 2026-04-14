@@ -6,6 +6,7 @@ export const createAccountSchema = z.object({
   category: z.nativeEnum(AccountCategory),
   annualGrowthRate: z.number().min(0).max(100).nullable().optional(),
   coinId: z.string().max(100).nullable().optional(),
+  coinSymbol: z.string().max(20).nullable().optional(),
   coinQuantity: z.number().positive().nullable().optional(),
 });
 
