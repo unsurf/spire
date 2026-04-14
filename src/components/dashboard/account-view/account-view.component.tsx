@@ -102,11 +102,6 @@ export function AccountView({
           <div className="text-2xl font-bold">
             <MaskedValue amount={displayBalance} currency={currency} />
           </div>
-          {liveValue !== undefined && (
-            <span className="bg-positive-soft text-positive rounded-md px-1.5 py-0.5 text-xs font-medium">
-              Live
-            </span>
-          )}
         </div>
         <BalanceChart
           data={chartData}
