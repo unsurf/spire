@@ -1,8 +1,8 @@
 /** Stroke/fill colour for historical balance data in all charts. */
-export const CHART_COLOR_BALANCE = "#10b981";
+export const CHART_COLOR_BALANCE = "var(--positive)";
 
 /** Stroke/fill colour for oracle projected data in all charts. */
-export const CHART_COLOR_PROJECTION = "#8b5cf6";
+export const CHART_COLOR_PROJECTION = "var(--accent)";
 
 /** Standard area chart gradient opacity values. */
 export const CHART_GRADIENT = {

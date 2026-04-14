@@ -53,12 +53,12 @@ export function isPayCycle(value: string): value is PayCycle {
 }
 
 export const CATEGORY_COLORS: Record<AccountCategory, string> = {
-  CHEQUE: "bg-blue-900/30 text-blue-300",
+  CHEQUE: "bg-edge text-on-surface",
   SAVINGS: "bg-accent-soft text-accent",
   HIGH_GROWTH: "bg-accent-soft text-accent",
-  EMERGENCY: "bg-amber-900/30 text-amber-300",
-  INVESTMENT: "bg-indigo-900/30 text-indigo-300",
-  CRYPTO: "bg-orange-900/30 text-orange-300",
-  ASSET: "bg-rose-900/30 text-rose-300",
-  OTHER: "bg-neutral-800 text-neutral-400",
+  EMERGENCY: "bg-error-soft text-error",
+  INVESTMENT: "bg-positive-soft text-positive",
+  CRYPTO: "bg-accent-soft text-accent",
+  ASSET: "bg-positive-soft text-positive",
+  OTHER: "bg-surface-raised text-muted",
 };
