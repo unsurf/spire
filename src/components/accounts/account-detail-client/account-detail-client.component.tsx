@@ -3,39 +3,15 @@
 import { useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import {
-  ArrowLeft,
-  TrendingUp,
-  TrendingDown,
-  Trash2,
-  Pencil,
-  Check,
-  X,
-} from "lucide-react";
+import { BalanceChart } from "@/components/balance-chart";
+import { ArrowLeft, TrendingUp, TrendingDown, Trash2, Pencil, Check, X } from "lucide-react";
 import { formatCurrency } from "@/lib/currencies";
-import {
-  ACCOUNT_CATEGORY_LABELS,
-  CATEGORY_COLORS,
-  PAY_CYCLE_LABELS,
-} from "@/lib/utils";
-import {
-  CHART_COLOR_BALANCE,
-  CHART_GRADIENT,
-} from "@/lib/constants/chart.constants";
+import { ACCOUNT_CATEGORY_LABELS, CATEGORY_COLORS, PAY_CYCLE_LABELS } from "@/lib/utils";
+import { CHART_COLOR_BALANCE, CHART_GRADIENT } from "@/lib/constants/chart.constants";
 import { ROUTES } from "@/lib/constants/routes.constants";
 import MaskedValue from "@/components/ui/masked-value";
 import type { AccountDetailClientProps } from "./account-detail-client.types";
-import {
-  buildHistoryData,
-  getAccountDelta,
-} from "./account-detail-client.utils";
+import { buildHistoryData, getAccountDelta } from "./account-detail-client.utils";
 
 export default function AccountDetailClientComponent({
   account: initial,
@@ -50,7 +26,7 @@ export default function AccountDetailClientComponent({
 
   const [oracleOn, setOracleOn] = useState(account.oracleEnabled);
   const [growthRate, setGrowthRate] = useState(
-    account.annualGrowthRate !== null ? String(account.annualGrowthRate) : ""
+    account.annualGrowthRate !== null ? String(account.annualGrowthRate) : "",
   );
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -59,14 +35,8 @@ export default function AccountDetailClientComponent({
 
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
-  const { currentBalance, delta } = useMemo(
-    () => getAccountDelta(account),
-    [account]
-  );
-  const historyData = useMemo(
-    () => buildHistoryData(account),
-    [account]
-  );
+  const { currentBalance, delta } = useMemo(() => getAccountDelta(account), [account]);
+  const historyData = useMemo(() => buildHistoryData(account), [account]);
 
   const handleUpdateBalance = useCallback(
     async (e: React.FormEvent) => {
@@ -94,7 +64,7 @@ export default function AccountDetailClientComponent({
 
       setBalanceLoading(false);
     },
-    [account.id, newBalance, note]
+    [account.id, newBalance, note],
   );
 
   const handleSaveSettings = useCallback(async () => {
@@ -138,31 +108,31 @@ export default function AccountDetailClientComponent({
     "w-full border border-edge-strong rounded-lg px-3.5 py-2.5 bg-input-bg text-input-text placeholder-subtle focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors text-sm";
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="max-w-4xl p-8">
       <Link
         href={ROUTES.DASHBOARD_ACCOUNT(account.id)}
-        className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-on-surface mb-6 transition-colors"
+        className="text-muted hover:text-on-surface mb-6 inline-flex items-center gap-1.5 text-sm transition-colors"
       >
         <ArrowLeft size={14} />
         Dashboard
       </Link>
 
-      <div className="flex items-start justify-between mb-8">
+      <div className="mb-8 flex items-start justify-between">
         <div>
-          <div className="flex items-center gap-3 mb-1">
+          <div className="mb-1 flex items-center gap-3">
             {editingName ? (
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={nameDraft}
                   onChange={(e) => setNameDraft(e.target.value)}
-                  className="text-2xl font-bold text-on-surface bg-input-bg border border-edge-strong rounded-lg px-3 py-1 focus:outline-none focus:border-accent"
+                  className="text-on-surface bg-input-bg border-edge-strong focus:border-accent rounded-lg border px-3 py-1 text-2xl font-bold focus:outline-none"
                   autoFocus
                 />
                 <button
                   onClick={handleSaveSettings}
                   disabled={savingSettings}
-                  className="p-1.5 rounded-lg bg-accent text-on-accent hover:bg-accent-strong transition-colors"
+                  className="bg-accent text-on-accent hover:bg-accent-strong rounded-lg p-1.5 transition-colors"
                 >
                   <Check size={14} />
                 </button>
@@ -171,32 +141,30 @@ export default function AccountDetailClientComponent({
                     setEditingName(false);
                     setNameDraft(account.name);
                   }}
-                  className="p-1.5 rounded-lg border border-edge-strong text-muted hover:text-on-surface transition-colors"
+                  className="border-edge-strong text-muted hover:text-on-surface rounded-lg border p-1.5 transition-colors"
                 >
                   <X size={14} />
                 </button>
               </div>
             ) : (
               <>
-                <h1 className="text-2xl font-bold text-on-surface">
-                  {account.name}
-                </h1>
+                <h1 className="text-on-surface text-2xl font-bold">{account.name}</h1>
                 <button
                   onClick={() => setEditingName(true)}
-                  className="p-1 rounded-md text-subtle hover:text-on-surface transition-colors"
+                  className="text-subtle hover:text-on-surface rounded-md p-1 transition-colors"
                 >
                   <Pencil size={13} />
                 </button>
               </>
             )}
             <span
-              className={`text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[account.category]}`}
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_COLORS[account.category]}`}
             >
               {ACCOUNT_CATEGORY_LABELS[account.category]}
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <p className="text-3xl font-bold text-on-surface">
+            <p className="text-on-surface text-3xl font-bold">
               <MaskedValue amount={currentBalance} currency={currency} />
             </p>
             {delta !== null && (
@@ -205,11 +173,7 @@ export default function AccountDetailClientComponent({
                   delta >= 0 ? "text-positive" : "text-error"
                 }`}
               >
-                {delta >= 0 ? (
-                  <TrendingUp size={14} />
-                ) : (
-                  <TrendingDown size={14} />
-                )}
+                {delta >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                 {delta >= 0 ? "+" : ""}
                 <MaskedValue amount={delta} currency={currency} />
               </span>
@@ -226,20 +190,18 @@ export default function AccountDetailClientComponent({
       </div>
 
       {deleteConfirm && (
-        <div className="mb-6 bg-error-soft border border-error-border rounded-xl p-4 flex items-center justify-between">
-          <p className="text-sm text-error font-medium">
-            Delete this account and all its history?
-          </p>
+        <div className="bg-error-soft border-error-border mb-6 flex items-center justify-between rounded-xl border p-4">
+          <p className="text-error text-sm font-medium">Delete this account and all its history?</p>
           <div className="flex gap-2">
             <button
               onClick={() => setDeleteConfirm(false)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-edge-strong text-muted hover:bg-surface transition-colors"
+              className="border-edge-strong text-muted hover:bg-surface rounded-lg border px-3 py-1.5 text-sm transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleDelete}
-              className="text-sm px-3 py-1.5 rounded-lg bg-error-strong text-on-error hover:opacity-90"
+              className="bg-error-strong text-on-error rounded-lg px-3 py-1.5 text-sm hover:opacity-90"
             >
               Delete
             </button>
@@ -247,82 +209,50 @@ export default function AccountDetailClientComponent({
         </div>
       )}
 
-      <div className="bg-surface-raised border border-edge rounded-xl p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-muted">Balance History</h2>
+      <div className="bg-surface-raised border-edge mb-6 rounded-xl border p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-muted text-sm font-semibold">Balance History</h2>
         </div>
 
         {historyData.length <= 1 ? (
-          <div className="h-64 flex items-center justify-center text-subtle text-sm">
+          <div className="text-subtle flex h-64 items-center justify-center text-sm">
             No history yet — update the balance to start tracking
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart
-              data={historyData}
-              margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="gradBalance" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={CHART_COLOR_BALANCE} stopOpacity={CHART_GRADIENT.BALANCE.start} />
-                  <stop offset="100%" stopColor={CHART_COLOR_BALANCE} stopOpacity={CHART_GRADIENT.BALANCE.end} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="idx"
-                type="number"
-                domain={[0, historyData.length - 1]}
-                ticks={[0, historyData.length - 1]}
-                axisLine={false}
-                tickLine={false}
-                tick={(props) => {
-                  const { x, y, index } = props as { x: number; y: number; payload: { value: number }; index: number };
-                  const isFirst = index === 0;
-                  const label = isFirst ? historyData[0]?.date : historyData[historyData.length - 1]?.date;
-                  return <text x={x} y={y + 12} textAnchor={isFirst ? "start" : "end"} fill="var(--muted)" fontSize={11}>{label ?? ""}</text>;
-                }}
-              />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (!active || !payload?.length) return null;
-                  const pt = payload[0].payload as { date: string; value: number };
-                  return (
-                    <div
-                      className="bg-surface-raised border border-edge rounded-xl px-4 py-3 text-xs shadow-lg pointer-events-none"
-                    >
-                      <p className="text-muted mb-1.5">{pt.date}</p>
-                      <p className="font-semibold text-on-surface">
-                        <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: CHART_COLOR_BALANCE }} />
-                        Balance: {formatCurrency(pt.value, currency)}
-                      </p>
-                    </div>
-                  );
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke={CHART_COLOR_BALANCE}
-                strokeWidth={2.5}
-                fill="url(#gradBalance)"
-                dot={false}
-                activeDot={{ r: 5, fill: CHART_COLOR_BALANCE, stroke: "#fff", strokeWidth: 2 }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <BalanceChart
+            data={historyData}
+            height={280}
+            series={[
+              {
+                dataKey: "value",
+                color: CHART_COLOR_BALANCE,
+                gradientId: "gradBalance",
+                gradientOpacity: CHART_GRADIENT.BALANCE,
+                strokeWidth: 2.5,
+              },
+            ]}
+            tooltipContent={(pt) => (
+              <div className="bg-surface-raised border-edge pointer-events-none rounded-xl border px-4 py-3 text-xs shadow-lg">
+                <p className="text-muted mb-1.5">{pt.date}</p>
+                <p className="text-on-surface font-semibold">
+                  <span
+                    className="mr-2 inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: CHART_COLOR_BALANCE }}
+                  />
+                  Balance: {formatCurrency(pt.value ?? 0, currency)}
+                </p>
+              </div>
+            )}
+          />
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-surface-raised border border-edge rounded-xl p-6">
-          <h2 className="text-sm font-semibold text-muted mb-4">
-            Update Balance
-          </h2>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="bg-surface-raised border-edge rounded-xl border p-6">
+          <h2 className="text-muted mb-4 text-sm font-semibold">Update Balance</h2>
           <form onSubmit={handleUpdateBalance} className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-muted mb-1">
-                New balance
-              </label>
+              <label className="text-muted mb-1 block text-xs font-medium">New balance</label>
               <input
                 type="number"
                 step="0.01"
@@ -334,9 +264,7 @@ export default function AccountDetailClientComponent({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted mb-1">
-                Note (optional)
-              </label>
+              <label className="text-muted mb-1 block text-xs font-medium">Note (optional)</label>
               <input
                 type="text"
                 value={note}
@@ -348,26 +276,20 @@ export default function AccountDetailClientComponent({
             <button
               type="submit"
               disabled={balanceLoading}
-              className="w-full bg-accent hover:bg-accent-strong disabled:opacity-50 text-on-accent rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
+              className="bg-accent hover:bg-accent-strong text-on-accent w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
             >
               {balanceLoading ? "Saving..." : "Save balance"}
             </button>
           </form>
         </div>
 
-        <div className="bg-surface-raised border border-edge rounded-xl p-6">
-          <h2 className="text-sm font-semibold text-muted mb-4">
-            Account Settings
-          </h2>
+        <div className="bg-surface-raised border-edge rounded-xl border p-6">
+          <h2 className="text-muted mb-4 text-sm font-semibold">Account Settings</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-on-surface">
-                  Oracle projections
-                </p>
-                <p className="text-xs text-muted mt-0.5">
-                  Include in projection dashboard
-                </p>
+                <p className="text-on-surface text-sm font-medium">Oracle projections</p>
+                <p className="text-muted mt-0.5 text-xs">Include in projection dashboard</p>
               </div>
               <button
                 onClick={() => setOracleOn((v) => !v)}
@@ -384,7 +306,7 @@ export default function AccountDetailClientComponent({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-muted mb-1">
+              <label className="text-muted mb-1 block text-xs font-medium">
                 Annual growth rate (%)
               </label>
               <input
@@ -397,7 +319,7 @@ export default function AccountDetailClientComponent({
                 placeholder="e.g. 4.5"
                 className={inputClassName}
               />
-              <p className="text-xs text-subtle mt-1">
+              <p className="text-subtle mt-1 text-xs">
                 Leave blank for contribution-only projection
               </p>
             </div>
@@ -405,7 +327,7 @@ export default function AccountDetailClientComponent({
             <button
               onClick={handleSaveSettings}
               disabled={savingSettings}
-              className="w-full bg-accent hover:bg-accent-strong disabled:opacity-50 text-on-accent rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
+              className="bg-accent hover:bg-accent-strong text-on-accent w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
             >
               {savingSettings ? "Saving..." : "Save settings"}
             </button>
@@ -414,10 +336,8 @@ export default function AccountDetailClientComponent({
       </div>
 
       {account.splits.length > 0 && (
-        <div className="mt-6 bg-surface-raised border border-edge rounded-xl p-6">
-          <h2 className="text-sm font-semibold text-muted mb-4">
-            Income Splits
-          </h2>
+        <div className="bg-surface-raised border-edge mt-6 rounded-xl border p-6">
+          <h2 className="text-muted mb-4 text-sm font-semibold">Income Splits</h2>
           <div className="space-y-2">
             {account.splits.map((split) => {
               const incomeAmount = Number(split.income.amount);
@@ -428,36 +348,27 @@ export default function AccountDetailClientComponent({
               return (
                 <div
                   key={split.id}
-                  className="flex items-center justify-between py-2 border-b border-edge last:border-0"
+                  className="border-edge flex items-center justify-between border-b py-2 last:border-0"
                 >
                   <div>
-                    <p className="text-sm font-medium text-on-surface">
-                      {split.income.name}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {PAY_CYCLE_LABELS[split.income.cycle]}
-                    </p>
+                    <p className="text-on-surface text-sm font-medium">{split.income.name}</p>
+                    <p className="text-muted text-xs">{PAY_CYCLE_LABELS[split.income.cycle]}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-sm font-semibold text-accent">
+                    <span className="text-accent text-sm font-semibold">
                       {formatCurrency(dollarValue, currency)}
                     </span>
                     {split.type === "PERCENTAGE" && (
-                      <span className="text-xs text-subtle ml-2">
-                        ({split.value}%)
-                      </span>
+                      <span className="text-subtle ml-2 text-xs">({split.value}%)</span>
                     )}
                   </div>
                 </div>
               );
             })}
           </div>
-          <p className="text-xs text-subtle mt-3">
+          <p className="text-subtle mt-3 text-xs">
             Manage splits on the{" "}
-            <Link
-              href={ROUTES.INCOME}
-              className="text-accent hover:underline"
-            >
+            <Link href={ROUTES.INCOME} className="text-accent hover:underline">
               Income page
             </Link>
           </p>
