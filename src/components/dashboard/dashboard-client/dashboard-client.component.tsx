@@ -9,10 +9,7 @@ import { OverviewView } from "../overview-view";
 import { AccountSidebar } from "../account-sidebar";
 import { useVisibility } from "@/lib/visibility-context";
 import type { OracleHorizon } from "@/lib/oracle";
-import {
-  CRYPTO_TIME_RANGE_DAYS,
-  type CryptoTimeRange,
-} from "@/lib/constants/crypto.constants";
+import { CRYPTO_TIME_RANGE_DAYS, type CryptoTimeRange } from "@/lib/constants/crypto.constants";
 import type {
   DashboardAccountGroupKey,
   DashboardAccount,
@@ -30,6 +27,7 @@ import {
   getVisibleGroups,
   buildCryptoChartData,
 } from "./dashboard-client.utils";
+import { isProjectableCategory } from "@/lib/utils";
 
 const priceSchema = z.record(z.string(), z.number());
 const cachedPricesSchema = z.array(z.tuple([z.string(), z.number()]));
@@ -61,6 +59,11 @@ export default function DashboardClientComponent({
   const [cryptoChartData, setCryptoChartData] = useState<ChartDataPoint[]>([]);
   const [cryptoChartLoading, setCryptoChartLoading] = useState(false);
   const { hidden, toggle: toggleVisibility } = useVisibility();
+
+  // Reset oracle when account selection changes
+  useEffect(() => {
+    setOracleOn(false);
+  }, [selectedAccountId]);
 
   // Hydrate live prices from localStorage cache on mount — prevents layout shift
   useEffect(() => {
@@ -110,9 +113,10 @@ export default function DashboardClientComponent({
 
     const days = CRYPTO_TIME_RANGE_DAYS[cryptoTimeRange];
     const quantity = parseFloat(selectedAccount.coinQuantity);
-    const purchaseMs = selectedAccount.balanceEntries.length > 0
-      ? new Date(selectedAccount.balanceEntries[0].recordedAt).getTime()
-      : Date.now();
+    const purchaseMs =
+      selectedAccount.balanceEntries.length > 0
+        ? new Date(selectedAccount.balanceEntries[0].recordedAt).getTime()
+        : Date.now();
     setCryptoChartLoading(true);
 
     fetch(
@@ -121,7 +125,8 @@ export default function DashboardClientComponent({
       .then((r) => r.json())
       .then((data: unknown) => {
         const parsed = historySchema.safeParse(data);
-        if (parsed.success) setCryptoChartData(buildCryptoChartData(parsed.data.points, quantity, purchaseMs));
+        if (parsed.success)
+          setCryptoChartData(buildCryptoChartData(parsed.data.points, quantity, purchaseMs));
       })
       .catch(() => {})
       .finally(() => setCryptoChartLoading(false));
@@ -131,7 +136,9 @@ export default function DashboardClientComponent({
     selectedAccountId !== null ? (accounts.find((a) => a.id === selectedAccountId) ?? null) : null;
 
   const isCryptoAccount = selectedAccount?.category === "CRYPTO" && !!selectedAccount.coinId;
-  const livePrice = selectedAccount?.coinId ? liveCryptoPrices.get(selectedAccount.coinId) : undefined;
+  const livePrice = selectedAccount?.coinId
+    ? liveCryptoPrices.get(selectedAccount.coinId)
+    : undefined;
   const liveValue =
     livePrice !== undefined && selectedAccount?.coinQuantity
       ? Math.round(parseFloat(selectedAccount.coinQuantity) * livePrice * 100) / 100
@@ -191,7 +198,9 @@ export default function DashboardClientComponent({
             <h1 className="text-on-surface text-2xl font-bold">
               {greeting}, {userName.split(" ")[0]}
             </h1>
-            <p className="text-muted mt-0.5">Here&apos;s what&apos;s happening with your finances</p>
+            <p className="text-muted mt-0.5">
+              Here&apos;s what&apos;s happening with your finances
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -201,7 +210,7 @@ export default function DashboardClientComponent({
             >
               {hidden ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
-            {selectedAccount?.oracleEnabled && !isCryptoAccount && (
+            {selectedAccount?.oracleEnabled && isProjectableCategory(selectedAccount.category) && (
               <button
                 onClick={() => setOracleOn((v) => !v)}
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-all ${

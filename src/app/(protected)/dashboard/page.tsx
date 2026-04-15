@@ -24,6 +24,7 @@ export default async function DashboardPage({
       include: {
         balanceEntries: { orderBy: { recordedAt: "asc" } },
         splits: { include: { income: true } },
+        trades: { orderBy: { tradedAt: "asc" } },
       },
       orderBy: { createdAt: "asc" },
     }),

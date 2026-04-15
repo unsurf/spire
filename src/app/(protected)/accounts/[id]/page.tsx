@@ -21,6 +21,7 @@ export default async function AccountDetailPage({
       include: {
         balanceEntries: { orderBy: { recordedAt: "asc" } },
         splits: { include: { income: true } },
+        trades: { orderBy: { tradedAt: "asc" } },
       },
     }),
     prisma.user.findUnique({

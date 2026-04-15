@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronRight, ExternalLink, Plus, Minus } from "lucide-react";
 import MaskedValue from "@/components/ui/masked-value";
 import { BalanceChart } from "@/components/balance-chart";
 import { ACCOUNT_CATEGORY_LABELS } from "@/lib/utils";
@@ -15,7 +15,9 @@ import {
   CHART_GRADIENT,
 } from "@/lib/constants/chart.constants";
 import { getCurrentBalance } from "../dashboard-client/dashboard-client.utils";
+import { calcTradePnl } from "../../accounts/account-detail-client/account-detail-client.utils";
 import type { AccountViewProps } from "./account-view.types";
+import type { DashboardTrade } from "../dashboard-client/dashboard-client.types";
 
 export function AccountView({
   selectedAccount,
@@ -35,6 +37,9 @@ export function AccountView({
   cryptoChartLoading,
 }: AccountViewProps) {
   const displayBalance = liveValue ?? getCurrentBalance(selectedAccount);
+  const trades = selectedAccount.trades ?? [];
+  const pnl = isCrypto ? calcTradePnl(trades, liveValue ?? null) : null;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -57,6 +62,7 @@ export function AccountView({
         </Link>
       </div>
 
+      {/* Chart card */}
       <div className="bg-surface-raised border-edge rounded-xl border">
         <div className="flex items-center justify-between px-4 pt-4">
           <p className="flex h-9 items-center gap-1">
@@ -67,15 +73,15 @@ export function AccountView({
           </p>
           {isCrypto && onCryptoTimeRangeChange && cryptoTimeRange ? (
             <div className="bg-surface border-edge flex h-9 items-center gap-1 rounded-lg border p-1">
-              {cryptoChartLoading && (
-                <span className="text-muted mr-1 text-xs">Loading...</span>
-              )}
+              {cryptoChartLoading && <span className="text-muted mr-1 text-xs">Loading...</span>}
               {CRYPTO_TIME_RANGES.map((r) => (
                 <button
                   key={r}
                   onClick={() => onCryptoTimeRangeChange(r)}
                   className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                    cryptoTimeRange === r ? "bg-accent text-on-accent" : "text-muted hover:text-on-surface"
+                    cryptoTimeRange === r
+                      ? "bg-accent text-on-accent"
+                      : "text-muted hover:text-on-surface"
                   }`}
                 >
                   {r}
@@ -129,7 +135,11 @@ export function AccountView({
           tooltipContent={(pt) => {
             const isProjected = pt.proj != null && pt.value == null;
             const label = pt.isLive ? "Live price" : isProjected ? "Projected" : "Balance";
-            const color = pt.isLive ? "var(--positive)" : isProjected ? CHART_COLOR_PROJECTION : CHART_COLOR_BALANCE;
+            const color = pt.isLive
+              ? "var(--positive)"
+              : isProjected
+                ? CHART_COLOR_PROJECTION
+                : CHART_COLOR_BALANCE;
             const val = pt.proj ?? pt.value ?? 0;
             return (
               <div className="bg-surface-raised border-edge pointer-events-none rounded-xl border px-4 py-3 text-xs shadow-lg">
@@ -147,40 +157,165 @@ export function AccountView({
         />
       </div>
 
+      {/* P&L summary row for crypto */}
+      {isCrypto && pnl && trades.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            {
+              label: "Holdings",
+              value: `${pnl.holdings.toFixed(8).replace(/\.?0+$/, "")} ${selectedAccount.coinSymbol ?? ""}`,
+              color: "text-on-surface",
+            },
+            {
+              label: "Avg cost",
+              value: formatCurrency(pnl.avgCostPerCoin, currency),
+              color: "text-on-surface",
+            },
+            {
+              label: "Unrealized P&L",
+              value:
+                pnl.unrealizedPnl !== null
+                  ? `${pnl.unrealizedPnl >= 0 ? "+" : ""}${formatCurrency(pnl.unrealizedPnl, currency)}`
+                  : "—",
+              color:
+                pnl.unrealizedPnl !== null
+                  ? pnl.unrealizedPnl >= 0
+                    ? "text-positive"
+                    : "text-error"
+                  : "text-muted",
+            },
+            {
+              label: "Realized P&L",
+              value: `${pnl.realizedPnl >= 0 ? "+" : ""}${formatCurrency(pnl.realizedPnl, currency)}`,
+              color: pnl.realizedPnl >= 0 ? "text-positive" : "text-error",
+            },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="bg-surface-raised border-edge rounded-xl border p-3">
+              <p className="text-muted mb-0.5 text-xs">{label}</p>
+              <p className={`text-sm font-semibold ${color}`}>{value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Trades (crypto) / Transactions (non-crypto) */}
       <div className="bg-surface-raised border-edge overflow-hidden rounded-xl border">
         <button
           onClick={onTransactionsToggle}
           className="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-left"
           aria-expanded={transactionsOpen}
         >
-          <span className="text-on-surface text-sm font-medium">Transactions</span>
+          <span className="text-on-surface text-sm font-medium">
+            {isCrypto ? "Trades" : "Transactions"}
+          </span>
           {transactionsOpen ? (
             <ChevronDown size={16} className="text-subtle" />
           ) : (
             <ChevronRight size={16} className="text-subtle" />
           )}
         </button>
+
         {transactionsOpen && (
-          <div className="border-edge flex flex-col gap-3 border-t p-4">
-            {[...selectedAccount.balanceEntries]
-              .slice(-5)
-              .reverse()
-              .map((entry) => (
-                <div
-                  key={entry.id}
-                  className="border-edge flex items-center justify-between rounded-lg border px-3 py-2"
-                >
-                  <div>
-                    <p className="text-on-surface text-sm">
-                      {new Date(entry.recordedAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-subtle text-xs">{entry.note ?? "No note"}</p>
-                  </div>
-                  <p className="text-on-surface text-sm font-semibold">
-                    <MaskedValue amount={Number(entry.balance)} currency={currency} />
-                  </p>
+          <div className="border-edge border-t">
+            {isCrypto ? (
+              trades.length === 0 ? (
+                <p className="text-subtle px-4 py-4 text-sm">
+                  No trades yet — record your first trade in{" "}
+                  <Link
+                    href={ROUTES.ACCOUNT_DETAIL(selectedAccount.id)}
+                    className="text-accent hover:underline"
+                  >
+                    Manage account
+                  </Link>
+                </p>
+              ) : (
+                <div className="divide-edge divide-y">
+                  {[...trades]
+                    .reverse()
+                    .slice(0, 8)
+                    .map((trade: DashboardTrade) => {
+                      const qty = parseFloat(trade.quantity);
+                      const price = parseFloat(trade.price);
+                      const total = qty * price;
+                      return (
+                        <div key={trade.id} className="flex items-center justify-between px-4 py-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span
+                              className={`inline-flex shrink-0 items-center gap-1 rounded-md p-2 text-xs font-semibold ${
+                                trade.type === "BUY"
+                                  ? "bg-positive-soft text-positive"
+                                  : "bg-error-soft text-error"
+                              }`}
+                            >
+                              {trade.type === "BUY" ? <Plus size={10} /> : <Minus size={10} />}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-on-surface text-sm tabular-nums">
+                                {qty.toFixed(8).replace(/\.?0+$/, "")}{" "}
+                                {selectedAccount.coinSymbol ?? ""}
+                                <span className="text-muted mx-1">@</span>
+                                {formatCurrency(price, currency)}
+                              </p>
+                              {trade.note && (
+                                <p className="text-subtle truncate text-xs">{trade.note}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="ml-4 shrink-0 text-right">
+                            <p
+                              className={`text-sm font-semibold tabular-nums ${
+                                trade.type === "BUY" ? "text-error" : "text-positive"
+                              }`}
+                            >
+                              {trade.type === "BUY" ? "-" : "+"}
+                              {formatCurrency(total, currency)}
+                            </p>
+                            <p className="text-subtle text-xs">
+                              {new Date(trade.tradedAt).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "2-digit",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {trades.length > 8 && (
+                    <div className="px-4 py-3">
+                      <Link
+                        href={ROUTES.ACCOUNT_DETAIL(selectedAccount.id)}
+                        className="text-accent text-xs hover:underline"
+                      >
+                        View all {trades.length} trades in Manage account
+                      </Link>
+                    </div>
+                  )}
                 </div>
-              ))}
+              )
+            ) : (
+              <div className="flex flex-col gap-3 p-4">
+                {[...selectedAccount.balanceEntries]
+                  .slice(-5)
+                  .reverse()
+                  .map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="border-edge flex items-center justify-between rounded-lg border px-3 py-2"
+                    >
+                      <div>
+                        <p className="text-on-surface text-sm">
+                          {new Date(entry.recordedAt).toLocaleDateString()}
+                        </p>
+                        <p className="text-subtle text-xs">{entry.note ?? "No note"}</p>
+                      </div>
+                      <p className="text-on-surface text-sm font-semibold">
+                        <MaskedValue amount={Number(entry.balance)} currency={currency} />
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         )}
       </div>

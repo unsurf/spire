@@ -70,6 +70,7 @@ export function BankAccountForm({ onBack, onClose, onAdded }: BankAccountFormPro
       coinQuantity: null,
       balanceEntries: [],
       splits: [],
+      trades: [],
     });
   }
 
