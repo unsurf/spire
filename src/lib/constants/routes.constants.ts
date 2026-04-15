@@ -4,6 +4,7 @@ export const ROUTES = {
   DASHBOARD_ACCOUNT: (id: string) => `/dashboard?${QUERY_PARAMS.ACCOUNT}=${id}`,
   ACCOUNT_DETAIL: (id: string) => `/accounts/${id}`,
   INCOME: "/income",
+  BILLS: "/bills",
   SETTINGS: "/settings",
   SIGN_IN: "/signin",
   REGISTER: "/register",

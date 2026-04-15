@@ -69,6 +69,12 @@ export async function PATCH(
         parsed.data.annualGrowthRate !== undefined
           ? parsed.data.annualGrowthRate
           : account.annualGrowthRate,
+      ...(parsed.data.coinQuantity !== undefined && {
+        coinQuantity: parsed.data.coinQuantity,
+      }),
+      ...(parsed.data.coinSymbol !== undefined && {
+        coinSymbol: parsed.data.coinSymbol,
+      }),
     },
   });
 

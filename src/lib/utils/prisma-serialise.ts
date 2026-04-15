@@ -5,12 +5,14 @@
  * These functions explicitly map each field to the plain types expected by
  * Client Components, replacing the JSON.parse(JSON.stringify(...)) antipattern.
  */
-import type { DashboardAccount } from "@/components/dashboard/dashboard-client/dashboard-client.types";
+import type { DashboardAccount, DashboardTrade } from "@/components/dashboard/dashboard-client/dashboard-client.types";
 import type { AccountDetailAccount } from "@/components/accounts/account-detail-client/account-detail-client.types";
 import type {
   IncomeItem,
   IncomeAccount,
 } from "@/components/income/income-client/income-client.types";
+import type { BillItem } from "@/components/bills/bills-client/bills-client.types";
+import type { AccountDetailTrade } from "@/components/accounts/account-detail-client/account-detail-client.types";
 
 type PrismaBalanceEntry = {
   id: string;
@@ -31,7 +33,16 @@ type PrismaSplit = {
   };
 };
 
-type PrismaAccount = {
+type PrismaTrade = {
+  id: string;
+  type: string;
+  quantity: { toString(): string };
+  price: { toString(): string };
+  tradedAt: Date;
+  note: string | null;
+};
+
+type PrismaAccountBase = {
   id: string;
   name: string;
   category: string;
@@ -42,7 +53,10 @@ type PrismaAccount = {
   coinQuantity: { toString(): string } | null;
   balanceEntries: PrismaBalanceEntry[];
   splits: PrismaSplit[];
+  trades: PrismaTrade[];
 };
+
+type PrismaAccount = PrismaAccountBase;
 
 type PrismaIncomeSplit = {
   id: string;
@@ -70,7 +84,7 @@ type PrismaAccountSimple = {
   category: string;
 };
 
-export function serialiseDashboardAccounts(accounts: PrismaAccount[]): DashboardAccount[] {
+export function serialiseDashboardAccounts(accounts: PrismaAccountBase[]): DashboardAccount[] {
   return accounts.map((a) => ({
     id: a.id,
     name: a.name,
@@ -80,6 +94,14 @@ export function serialiseDashboardAccounts(accounts: PrismaAccount[]): Dashboard
     coinId: a.coinId,
     coinSymbol: a.coinSymbol,
     coinQuantity: a.coinQuantity?.toString() ?? null,
+    trades: a.trades.map((t) => ({
+      id: t.id,
+      type: t.type as DashboardTrade["type"],
+      quantity: t.quantity.toString(),
+      price: t.price.toString(),
+      tradedAt: t.tradedAt.toISOString(),
+      note: t.note,
+    })),
     balanceEntries: a.balanceEntries.map((e) => ({
       id: e.id,
       balance: e.balance.toString(),
@@ -106,6 +128,17 @@ export function serialiseAccountDetail(account: PrismaAccount): AccountDetailAcc
     category: account.category as AccountDetailAccount["category"],
     oracleEnabled: account.oracleEnabled,
     annualGrowthRate: account.annualGrowthRate,
+    coinId: account.coinId,
+    coinSymbol: account.coinSymbol,
+    coinQuantity: account.coinQuantity?.toString() ?? null,
+    trades: account.trades.map((t) => ({
+      id: t.id,
+      type: t.type as AccountDetailTrade["type"],
+      quantity: t.quantity.toString(),
+      price: t.price.toString(),
+      tradedAt: t.tradedAt.toISOString(),
+      note: t.note,
+    })),
     balanceEntries: account.balanceEntries.map((e) => ({
       id: e.id,
       balance: e.balance.toString(),
@@ -151,5 +184,27 @@ export function serialiseIncomeAccounts(accounts: PrismaAccountSimple[]): Income
     id: a.id,
     name: a.name,
     category: a.category as IncomeAccount["category"],
+  }));
+}
+
+type PrismaBill = {
+  id: string;
+  name: string;
+  amount: { toString(): string } | null;
+  accountId: string | null;
+  cycle: string;
+  startDate: Date;
+  account: { name: string } | null;
+};
+
+export function serialiseBills(bills: PrismaBill[]): BillItem[] {
+  return bills.map((b) => ({
+    id: b.id,
+    name: b.name,
+    amount: b.amount ? b.amount.toString() : null,
+    accountId: b.accountId,
+    accountName: b.account?.name ?? null,
+    cycle: b.cycle as BillItem["cycle"],
+    startDate: b.startDate.toISOString(),
   }));
 }

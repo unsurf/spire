@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       category: parsed.data.category,
       annualGrowthRate: parsed.data.annualGrowthRate ?? null,
       coinId: parsed.data.coinId ?? null,
+      coinSymbol: parsed.data.coinSymbol ?? null,
       coinQuantity: parsed.data.coinQuantity ?? null,
       oracleEnabled: true,
     },

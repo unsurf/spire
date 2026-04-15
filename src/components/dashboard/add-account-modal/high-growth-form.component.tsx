@@ -76,6 +76,7 @@ export function HighGrowthForm({ onBack, onClose, onAdded }: HighGrowthFormProps
       coinQuantity: null,
       balanceEntries: [],
       splits: [],
+      trades: [],
     });
   }
 

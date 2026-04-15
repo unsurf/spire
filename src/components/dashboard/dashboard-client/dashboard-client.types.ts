@@ -18,6 +18,15 @@ export type DashboardSplit = {
   };
 };
 
+export type DashboardTrade = {
+  id: string;
+  type: "BUY" | "SELL";
+  quantity: string;
+  price: string;
+  tradedAt: string;
+  note: string | null;
+};
+
 export type DashboardAccount = {
   id: string;
   name: string;
@@ -29,6 +38,7 @@ export type DashboardAccount = {
   coinQuantity: string | null;
   balanceEntries: DashboardBalanceEntry[];
   splits: DashboardSplit[];
+  trades: DashboardTrade[];
 };
 
 export type DashboardClientProps = {

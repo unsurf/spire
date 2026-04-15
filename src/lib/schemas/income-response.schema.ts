@@ -9,7 +9,7 @@ import { z } from "zod";
 export const incomeSplitResponseSchema = z.object({
   id: z.string(),
   type: z.enum(["PERCENTAGE", "FIXED"]),
-  value: z.string(),
+  value: z.coerce.string(),
   account: z.object({
     id: z.string(),
     name: z.string(),
@@ -29,7 +29,7 @@ export const incomeSplitResponseSchema = z.object({
 export const incomeItemResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
-  amount: z.string(),
+  amount: z.coerce.string(),
   cycle: z.enum([
     "WEEKLY",
     "FORTNIGHTLY",

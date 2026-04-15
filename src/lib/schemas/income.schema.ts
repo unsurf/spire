@@ -5,7 +5,7 @@ export const createIncomeSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   amount: z.number().finite().positive("Amount must be positive"),
   cycle: z.nativeEnum(PayCycle),
-  lastPaidAt: z.string().datetime({ offset: true }).nullable().optional(),
+  lastPaidAt: z.string().refine((v) => !isNaN(Date.parse(v)), "Invalid date").nullable().optional(),
 });
 
 export const splitSchema = z.object({

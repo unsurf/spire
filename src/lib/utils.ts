@@ -27,6 +27,17 @@ export function isAssetCategory(category: AccountCategory): boolean {
   return ASSET_CATEGORIES.includes(category);
 }
 
+/** Categories where Oracle projections are legally/contextually appropriate. */
+export const NON_PROJECTABLE_CATEGORIES: AccountCategory[] = [
+  "CRYPTO",
+  "INVESTMENT",
+  "ASSET",
+];
+
+export function isProjectableCategory(category: AccountCategory): boolean {
+  return !NON_PROJECTABLE_CATEGORIES.includes(category);
+}
+
 export const PAY_CYCLE_LABELS: Record<PayCycle, string> = {
   WEEKLY: "Weekly",
   FORTNIGHTLY: "Fortnightly",

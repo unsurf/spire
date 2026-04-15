@@ -214,16 +214,21 @@ export function SplitEditor({
                   </button>
                 </div>
 
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max={draft.type === "PERCENTAGE" ? "100" : undefined}
-                  value={draft.value}
-                  onChange={(e) => updateRow(i, { value: e.target.value })}
-                  placeholder={draft.type === "PERCENTAGE" ? "0" : "0.00"}
-                  className="w-24 border border-edge-strong rounded-lg px-3 py-2 text-sm bg-input-bg text-input-text focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent text-right"
-                />
+                <div className="relative w-24">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={draft.type === "PERCENTAGE" ? "100" : undefined}
+                    value={draft.value}
+                    onChange={(e) => updateRow(i, { value: e.target.value })}
+                    placeholder={draft.type === "PERCENTAGE" ? "0" : "0.00"}
+                    className="w-full border border-edge-strong rounded-lg pl-3 pr-6 py-2 text-sm bg-input-bg text-input-text focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent text-right"
+                  />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-subtle pointer-events-none select-none">
+                    {draft.type === "PERCENTAGE" ? "%" : "$"}
+                  </span>
+                </div>
 
                 {draft.value && parsedValue > 0 && (
                   <span className="text-xs text-subtle whitespace-nowrap min-w-[80px]">

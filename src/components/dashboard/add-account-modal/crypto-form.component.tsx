@@ -19,6 +19,16 @@ const createdAccountSchema = z.object({
   coinQuantity: z.union([z.string(), z.number()]).nullable(),
 });
 
+const tradeResponseSchema = z.object({
+  id: z.string(),
+  type: z.enum(["BUY", "SELL"]),
+  quantity: z.string(),
+  price: z.string(),
+  tradedAt: z.string(),
+  note: z.string().nullable(),
+  coinQuantity: z.string(),
+});
+
 const balanceEntrySchema = z.object({
   id: z.string(),
   balance: z.union([z.string(), z.number()]),
@@ -87,7 +97,6 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
     const balance = Math.round(qty * coinPrice * 100) / 100;
     const note = `${qty} ${selectedCoin.symbol.toUpperCase()} @ ${formatCurrency(coinPrice, currency)}`;
 
-    // Create account
     const accountRes = await fetch("/api/accounts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -96,7 +105,6 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
         category: "CRYPTO",
         coinId: selectedCoin.id,
         coinSymbol: selectedCoin.symbol.toUpperCase(),
-        coinQuantity: qty,
       }),
     });
 
@@ -124,7 +132,13 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
       return;
     }
 
-    const { id: accountId, name, category: rawCategory, annualGrowthRate, coinId, coinQuantity } = accountResult.data;
+    const {
+      id: accountId,
+      name,
+      category: rawCategory,
+      annualGrowthRate,
+      coinId,
+    } = accountResult.data;
     const coinSymbol = selectedCoin.symbol.toUpperCase();
     if (!isAccountCategory(rawCategory)) {
       setError("Unexpected response from server");
@@ -132,7 +146,42 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
       return;
     }
 
-    // Create initial balance entry
+    const tradeRes = await fetch(`/api/accounts/${accountId}/trades`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "BUY",
+        quantity: qty,
+        price: coinPrice,
+        tradedAt: new Date().toISOString(),
+        note,
+      }),
+    });
+
+    let tradeData: unknown;
+    try {
+      tradeData = await tradeRes.json();
+    } catch {
+      setError("Account created but failed to record trade");
+      setLoading(false);
+      return;
+    }
+
+    if (!tradeRes.ok) {
+      setError("Account created but failed to record trade");
+      setLoading(false);
+      return;
+    }
+
+    const tradeResult = tradeResponseSchema.safeParse(tradeData);
+    if (!tradeResult.success) {
+      setError("Account created but trade response was invalid");
+      setLoading(false);
+      return;
+    }
+
+    const trade = tradeResult.data;
+
     const entryRes = await fetch(`/api/accounts/${accountId}/balance`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -171,7 +220,7 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
       annualGrowthRate,
       coinId: coinId ?? null,
       coinSymbol,
-      coinQuantity: coinQuantity !== null ? String(coinQuantity) : null,
+      coinQuantity: trade.coinQuantity,
       balanceEntries: [
         {
           id: entry.id,
@@ -181,14 +230,22 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
         },
       ],
       splits: [],
+      trades: [
+        {
+          id: trade.id,
+          type: trade.type,
+          quantity: trade.quantity,
+          price: trade.price,
+          tradedAt: trade.tradedAt,
+          note: trade.note,
+        },
+      ],
     });
   }
 
   const qty = parseFloat(quantity);
   const computedValue =
-    coinPrice !== null && !isNaN(qty) && qty > 0
-      ? Math.round(qty * coinPrice * 100) / 100
-      : null;
+    coinPrice !== null && !isNaN(qty) && qty > 0 ? Math.round(qty * coinPrice * 100) / 100 : null;
 
   return (
     <div className="bg-surface-raised border-edge w-full max-w-md rounded-2xl border p-6 shadow-xl">
@@ -196,14 +253,24 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button
-            onClick={phase === "quantity" ? () => { setPhase("search"); setSelectedCoin(null); setCoinPrice(null); setQuantity(""); setError(""); } : onBack}
+            onClick={
+              phase === "quantity"
+                ? () => {
+                    setPhase("search");
+                    setSelectedCoin(null);
+                    setCoinPrice(null);
+                    setQuantity("");
+                    setError("");
+                  }
+                : onBack
+            }
             className="text-subtle hover:text-on-surface -ml-1 rounded-md p-1 transition-colors"
             aria-label="Back"
           >
             <ArrowLeft size={18} />
           </button>
           <h2 className="text-on-surface text-lg font-semibold">
-            {phase === "search" ? "Add Crypto" : selectedCoin?.name ?? "Add Crypto"}
+            {phase === "search" ? "Add Crypto" : (selectedCoin?.name ?? "Add Crypto")}
           </h2>
         </div>
         <button onClick={onClose} className="text-subtle hover:text-on-surface transition-colors">
@@ -215,7 +282,7 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
       {phase === "search" && (
         <div className="space-y-3">
           <div className="relative">
-            <Search size={15} className="text-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search size={15} className="text-subtle absolute top-1/2 left-3.5 -translate-y-1/2" />
             <input
               type="text"
               value={query}
@@ -225,7 +292,10 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
               placeholder="Search Bitcoin, Ethereum..."
             />
             {searching && (
-              <Loader2 size={15} className="text-subtle absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin" />
+              <Loader2
+                size={15}
+                className="text-subtle absolute top-1/2 right-3.5 -translate-y-1/2 animate-spin"
+              />
             )}
           </div>
 
@@ -240,7 +310,13 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={coin.thumb} alt={coin.name} width={24} height={24} className="rounded-full" />
+                  <img
+                    src={coin.thumb}
+                    alt={coin.name}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
                   <span className="text-on-surface text-sm font-medium">{coin.name}</span>
                   <span className="text-subtle ml-auto text-xs">{coin.symbol}</span>
                 </button>
@@ -249,7 +325,9 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
           )}
 
           {query.trim() && !searching && results.length === 0 && (
-            <p className="text-subtle py-4 text-center text-sm">No results for &ldquo;{query}&rdquo;</p>
+            <p className="text-subtle py-4 text-center text-sm">
+              No results for &ldquo;{query}&rdquo;
+            </p>
           )}
         </div>
       )}
@@ -260,7 +338,13 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
           {/* Selected coin card */}
           <div className="bg-surface border-edge flex items-center gap-3 rounded-xl border px-4 py-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={selectedCoin.thumb} alt={selectedCoin.name} width={32} height={32} className="rounded-full" />
+            <img
+              src={selectedCoin.thumb}
+              alt={selectedCoin.name}
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
             <div className="flex-1">
               <p className="text-on-surface text-sm font-medium">{selectedCoin.name}</p>
               <p className="text-subtle text-xs">{selectedCoin.symbol}</p>

@@ -32,6 +32,21 @@ enum SplitType {
   FIXED
 }
 
+enum TradeType {
+  BUY
+  SELL
+}
+
+enum BillCycle {
+  DAILY
+  WEEKLY
+  FORTNIGHTLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+  ONE_TIME
+}
+
 model User {
   id                 String   @id @default(cuid())
   name               String
@@ -44,6 +59,7 @@ model User {
 
   incomes  Income[]
   accounts Account[]
+  bills    Bill[]
 }
 
 model Income {
@@ -78,6 +94,21 @@ model Account {
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   splits         AccountSplit[]
   balanceEntries BalanceEntry[]
+  bills          Bill[]
+  trades         Trade[]
+}
+
+model Trade {
+  id        String    @id @default(cuid())
+  accountId String
+  type      TradeType
+  quantity  Decimal   @db.Decimal(18, 8)
+  price     Decimal   @db.Decimal(12, 2)
+  tradedAt  DateTime
+  note      String?
+  createdAt DateTime  @default(now())
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 }
 
 model AccountSplit {
@@ -91,6 +122,20 @@ model AccountSplit {
   account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([incomeId, accountId])
+}
+
+model Bill {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  amount    Decimal?  @db.Decimal(12, 2)
+  accountId String?
+  cycle     BillCycle
+  startDate DateTime
+  createdAt DateTime  @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
 }
 
 model BalanceEntry {
