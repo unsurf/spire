@@ -47,6 +47,33 @@ enum BillCycle {
   ONE_TIME
 }
 
+enum BillCategory {
+  LIVING_EXPENSES
+  SUBSCRIPTIONS
+}
+
+enum BillSubcategory {
+  // Living Expenses
+  RENT
+  ELECTRICITY
+  WATER
+  GAS
+  INTERNET
+  GROCERIES
+  HOME_INSURANCE
+  PHONE
+  COUNCIL_RATES
+  // Subscriptions
+  SOCIAL
+  STREAMING
+  DATA_STORAGE
+  TOOLS
+  AI
+  SHOPPING_DELIVERY
+  // Shared
+  OTHER
+}
+
 model User {
   id                 String   @id @default(cuid())
   name               String
@@ -125,14 +152,16 @@ model AccountSplit {
 }
 
 model Bill {
-  id        String    @id @default(cuid())
-  userId    String
-  name      String
-  amount    Decimal?  @db.Decimal(12, 2)
-  accountId String?
-  cycle     BillCycle
-  startDate DateTime
-  createdAt DateTime  @default(now())
+  id          String           @id @default(cuid())
+  userId      String
+  name        String
+  amount      Decimal?         @db.Decimal(12, 2)
+  accountId   String?
+  cycle       BillCycle
+  startDate   DateTime
+  category    BillCategory?
+  subcategory BillSubcategory?
+  createdAt   DateTime         @default(now())
 
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   account Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)

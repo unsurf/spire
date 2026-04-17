@@ -1,4 +1,4 @@
-import type { BillCycle, AccountCategory } from "@/generated/prisma/client";
+import type { BillCycle, AccountCategory, BillCategory, BillSubcategory } from "@/generated/prisma/client";
 
 export type BillItem = {
   id: string;
@@ -8,6 +8,8 @@ export type BillItem = {
   accountName: string | null;
   cycle: BillCycle;
   startDate: string; // ISO string
+  category: BillCategory | null;
+  subcategory: BillSubcategory | null;
 };
 
 export type BillAccount = {

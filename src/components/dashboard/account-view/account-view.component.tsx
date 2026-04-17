@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, ChevronRight, ExternalLink, Plus, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Minus } from "lucide-react";
 import MaskedValue from "@/components/ui/masked-value";
 import { BalanceChart } from "@/components/balance-chart";
 import { ACCOUNT_CATEGORY_LABELS } from "@/lib/utils";
@@ -29,8 +29,8 @@ export function AccountView({
   chartData,
   transactionsOpen,
   onTransactionsToggle,
-  onDeselect,
   liveValue,
+  livePricePerCoin,
   isCrypto,
   cryptoTimeRange,
   onCryptoTimeRangeChange,
@@ -38,30 +38,10 @@ export function AccountView({
 }: AccountViewProps) {
   const displayBalance = liveValue ?? getCurrentBalance(selectedAccount);
   const trades = selectedAccount.trades ?? [];
-  const pnl = isCrypto ? calcTradePnl(trades, liveValue ?? null) : null;
+  const pnl = isCrypto ? calcTradePnl(trades, livePricePerCoin ?? null) : null;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm">
-          <button
-            onClick={onDeselect}
-            className="text-muted hover:text-on-surface transition-colors"
-          >
-            Overview
-          </button>
-          <span className="text-subtle">/</span>
-          <span className="text-on-surface font-medium">{selectedAccount.name}</span>
-        </div>
-        <Link
-          href={ROUTES.ACCOUNT_DETAIL(selectedAccount.id)}
-          className="text-accent hover:text-accent-strong flex items-center gap-1.5 text-xs font-medium transition-colors"
-        >
-          Manage account
-          <ExternalLink size={12} />
-        </Link>
-      </div>
-
       {/* Chart card */}
       <div className="bg-surface-raised border-edge rounded-xl border">
         <div className="flex items-center justify-between px-4 pt-4">

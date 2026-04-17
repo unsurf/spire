@@ -1,11 +1,11 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { BillsOverviewClient } from "@/components/bills/bills-overview-client";
+import BillsClient from "@/components/bills/bills-client";
 import { ROUTES } from "@/lib/constants/routes.constants";
 import { serialiseBills, serialiseIncomeAccounts } from "@/lib/utils/prisma-serialise";
 
-export default async function BillsPage() {
+export default async function BillsCalendarPage() {
   const session = await auth();
   if (!session?.user?.id) redirect(ROUTES.SIGN_IN);
 
@@ -26,7 +26,7 @@ export default async function BillsPage() {
   ]);
 
   return (
-    <BillsOverviewClient
+    <BillsClient
       bills={serialiseBills(bills)}
       accounts={serialiseIncomeAccounts(accounts)}
       currency={user?.currency ?? "USD"}

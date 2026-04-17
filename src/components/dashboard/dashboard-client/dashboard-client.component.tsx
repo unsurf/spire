@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { z } from "zod";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, PanelLeft, ExternalLink } from "lucide-react";
 import { AddAccountModal } from "../add-account-modal";
 import { AccountView } from "../account-view";
 import { OverviewView } from "../overview-view";
@@ -28,6 +28,7 @@ import {
   buildCryptoChartData,
 } from "./dashboard-client.utils";
 import { isProjectableCategory } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes.constants";
 
 const priceSchema = z.record(z.string(), z.number());
 const cachedPricesSchema = z.array(z.tuple([z.string(), z.number()]));
@@ -59,6 +60,7 @@ export default function DashboardClientComponent({
   const [cryptoChartData, setCryptoChartData] = useState<ChartDataPoint[]>([]);
   const [cryptoChartLoading, setCryptoChartLoading] = useState(false);
   const { hidden, toggle: toggleVisibility } = useVisibility();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Reset oracle when account selection changes
   useEffect(() => {
@@ -112,11 +114,6 @@ export default function DashboardClientComponent({
     }
 
     const days = CRYPTO_TIME_RANGE_DAYS[cryptoTimeRange];
-    const quantity = parseFloat(selectedAccount.coinQuantity);
-    const purchaseMs =
-      selectedAccount.balanceEntries.length > 0
-        ? new Date(selectedAccount.balanceEntries[0].recordedAt).getTime()
-        : Date.now();
     setCryptoChartLoading(true);
 
     fetch(
@@ -126,7 +123,7 @@ export default function DashboardClientComponent({
       .then((data: unknown) => {
         const parsed = historySchema.safeParse(data);
         if (parsed.success)
-          setCryptoChartData(buildCryptoChartData(parsed.data.points, quantity, purchaseMs));
+          setCryptoChartData(buildCryptoChartData(parsed.data.points, selectedAccount.trades));
       })
       .catch(() => {})
       .finally(() => setCryptoChartLoading(false));
@@ -178,30 +175,35 @@ export default function DashboardClientComponent({
 
   return (
     <div className="bg-surface flex h-full">
-      <AccountSidebar
-        accounts={accounts}
-        visibleGroups={visibleGroups}
-        sidebarFilter={sidebarFilter}
-        onFilterChange={setSidebarFilter}
-        expandedGroups={expandedGroups}
-        onToggleGroup={toggleGroup}
-        selectedAccountId={selectedAccountId}
-        onSelectAccount={setSelectedAccountId}
-        onAddAccount={() => setShowAddAccount(true)}
-        currency={currency}
-        liveCryptoPrices={liveCryptoPrices}
-      />
+      <div
+        className="shrink-0 overflow-hidden border-r border-edge transition-[width] duration-300 ease-in-out"
+        style={{ width: sidebarCollapsed ? 0 : 288 }}
+      >
+        <AccountSidebar
+          accounts={accounts}
+          visibleGroups={visibleGroups}
+          sidebarFilter={sidebarFilter}
+          onFilterChange={setSidebarFilter}
+          expandedGroups={expandedGroups}
+          onToggleGroup={toggleGroup}
+          selectedAccountId={selectedAccountId}
+          onSelectAccount={setSelectedAccountId}
+          onAddAccount={() => setShowAddAccount(true)}
+          currency={currency}
+          liveCryptoPrices={liveCryptoPrices}
+        />
+      </div>
 
       <div className="min-w-0 flex-1 overflow-y-auto p-8">
-        <div className="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-on-surface text-2xl font-bold">
-              {greeting}, {userName.split(" ")[0]}
-            </h1>
-            <p className="text-muted mt-0.5">
-              Here&apos;s what&apos;s happening with your finances
-            </p>
-          </div>
+        {/* Row 1: panel toggle + eye/oracle */}
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => setSidebarCollapsed((v) => !v)}
+            className="border-edge text-subtle hover:text-on-surface hover:bg-surface-raised shrink-0 rounded-md border p-2 transition-colors"
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <PanelLeft size={14} />
+          </button>
           <div className="flex items-center gap-3">
             <button
               onClick={toggleVisibility}
@@ -225,6 +227,47 @@ export default function DashboardClientComponent({
           </div>
         </div>
 
+        {/* Row 2: breadcrumbs */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2 text-sm">
+            {selectedAccount ? (
+              <>
+                <button
+                  onClick={() => setSelectedAccountId(null)}
+                  className="text-muted hover:text-on-surface transition-colors"
+                >
+                  Overview
+                </button>
+                <span className="text-subtle">/</span>
+                <span className="text-on-surface font-medium">{selectedAccount.name}</span>
+              </>
+            ) : (
+              <span className="text-on-surface font-medium">Overview</span>
+            )}
+          </div>
+          {selectedAccount && (
+            <a
+              href={ROUTES.ACCOUNT_DETAIL(selectedAccount.id)}
+              className="text-accent hover:text-accent-strong flex items-center gap-1.5 text-xs font-medium transition-colors"
+            >
+              Manage account
+              <ExternalLink size={12} />
+            </a>
+          )}
+        </div>
+
+        {/* Row 3: greeting — overview only */}
+        {!selectedAccount && (
+          <div className="mb-8">
+            <h1 className="text-on-surface text-2xl font-bold">
+              {greeting}, {userName.split(" ")[0]}
+            </h1>
+            <p className="text-muted mt-0.5">
+              Here&apos;s what&apos;s happening with your finances
+            </p>
+          </div>
+        )}
+
         {selectedAccount ? (
           <AccountView
             selectedAccount={selectedAccount}
@@ -236,8 +279,8 @@ export default function DashboardClientComponent({
             chartData={effectiveChartData}
             transactionsOpen={transactionsOpen}
             onTransactionsToggle={() => setTransactionsOpen((prev) => !prev)}
-            onDeselect={() => setSelectedAccountId(null)}
             liveValue={liveValue}
+            livePricePerCoin={livePrice}
             isCrypto={isCryptoAccount}
             cryptoTimeRange={cryptoTimeRange}
             onCryptoTimeRangeChange={setCryptoTimeRange}

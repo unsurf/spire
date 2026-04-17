@@ -194,6 +194,8 @@ type PrismaBill = {
   accountId: string | null;
   cycle: string;
   startDate: Date;
+  category: string | null;
+  subcategory: string | null;
   account: { name: string } | null;
 };
 
@@ -206,5 +208,7 @@ export function serialiseBills(bills: PrismaBill[]): BillItem[] {
     accountName: b.account?.name ?? null,
     cycle: b.cycle as BillItem["cycle"],
     startDate: b.startDate.toISOString(),
+    category: b.category as BillItem["category"],
+    subcategory: b.subcategory as BillItem["subcategory"],
   }));
 }

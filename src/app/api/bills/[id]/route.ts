@@ -22,7 +22,7 @@ export async function PATCH(req: Request, { params }: Params) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { name, amount, accountId, cycle, startDate } = parsed.data;
+  const { name, amount, accountId, cycle, startDate, category, subcategory } = parsed.data;
 
   const bill = await prisma.bill.update({
     where: { id },
@@ -32,6 +32,8 @@ export async function PATCH(req: Request, { params }: Params) {
       accountId: accountId ?? null,
       cycle,
       startDate: new Date(startDate),
+      category: category ?? null,
+      subcategory: subcategory ?? null,
     },
     include: { account: { select: { name: true } } },
   });
@@ -44,6 +46,8 @@ export async function PATCH(req: Request, { params }: Params) {
     accountName: bill.account?.name ?? null,
     cycle: bill.cycle,
     startDate: bill.startDate.toISOString(),
+    category: bill.category,
+    subcategory: bill.subcategory,
   });
 }
 

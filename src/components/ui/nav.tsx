@@ -21,22 +21,49 @@ export default function Nav() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
+        {NAV_ITEMS.map(({ href, label, icon: Icon, children }) => {
+          const active = pathname === href || (children ? false : pathname.startsWith(href + "/"));
+          const parentActive = pathname === href || pathname.startsWith(href + "/");
+
           return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                active
-                  ? "bg-edge text-on-surface"
-                  : "text-muted hover:text-on-surface hover:bg-edge"
+            <div key={href}>
+              <Link
+                href={href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  active || (parentActive && !children)
+                    ? "bg-edge text-on-surface"
+                    : parentActive
+                    ? "text-on-surface"
+                    : "text-muted hover:text-on-surface hover:bg-edge"
+                )}
+              >
+                <Icon size={16} />
+                {label}
+              </Link>
+
+              {children && parentActive && (
+                <div className="ml-4 mt-0.5 space-y-0.5">
+                  {children.map((child) => {
+                    const childActive = pathname === child.href;
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={cn(
+                          "flex items-center gap-3 pl-5 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l border-edge ml-2",
+                          childActive
+                            ? "bg-edge text-on-surface"
+                            : "text-muted hover:text-on-surface hover:bg-edge"
+                        )}
+                      >
+                        {child.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
-            >
-              <Icon size={16} />
-              {label}
-            </Link>
+            </div>
           );
         })}
       </nav>

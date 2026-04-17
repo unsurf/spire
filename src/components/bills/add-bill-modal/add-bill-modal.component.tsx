@@ -4,8 +4,13 @@ import { useState } from "react";
 import { z } from "zod";
 import { X, Trash2 } from "lucide-react";
 import { BILL_CYCLE_ENTRIES } from "../bills-client/bills-client.constants";
+import {
+  BILL_CATEGORY_LABELS,
+  BILL_SUBCATEGORY_LABELS,
+  SUBCATEGORIES_BY_CATEGORY,
+} from "@/lib/constants/bills.constants";
 import { billItemResponseSchema } from "@/lib/schemas/bill-response.schema";
-import type { BillCycle } from "@/generated/prisma/client";
+import type { BillCycle, BillCategory } from "@/generated/prisma/client";
 import type { AddBillModalProps } from "./add-bill-modal.types";
 
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -28,12 +33,19 @@ export default function AddBillModalComponent({
   const [startDate, setStartDate] = useState(
     bill?.startDate ? bill.startDate.slice(0, 10) : TODAY,
   );
+  const [category, setCategory] = useState<BillCategory | "">(bill?.category ?? "");
+  const [subcategory, setSubcategory] = useState(bill?.subcategory ?? "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
 
   const inputClass =
     "w-full border border-edge-strong rounded-lg px-3.5 py-2.5 bg-input-bg text-input-text placeholder-subtle focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent text-sm";
+
+  function handleCategoryChange(val: string) {
+    setCategory(val as BillCategory | "");
+    setSubcategory("");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +58,8 @@ export default function AddBillModalComponent({
       accountId: accountId || null,
       cycle,
       startDate,
+      category: category || null,
+      subcategory: subcategory || null,
     };
 
     const url = editing ? `/api/bills/${bill.id}` : "/api/bills";
@@ -81,6 +95,8 @@ export default function AddBillModalComponent({
     if (res.ok) onDeleted(bill.id);
   }
 
+  const subcategoryOptions = category ? SUBCATEGORIES_BY_CATEGORY[category] : [];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-surface-raised border border-edge rounded-2xl w-full max-w-md mx-4 shadow-xl">
@@ -107,6 +123,37 @@ export default function AddBillModalComponent({
               placeholder="e.g. Netflix"
               className={inputClass}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-muted mb-1">Category <span className="text-subtle font-normal">optional</span></label>
+              <select
+                value={category}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">No category</option>
+                {(Object.keys(BILL_CATEGORY_LABELS) as BillCategory[]).map((cat) => (
+                  <option key={cat} value={cat}>{BILL_CATEGORY_LABELS[cat]}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-muted mb-1">Subcategory <span className="text-subtle font-normal">optional</span></label>
+              <select
+                value={subcategory}
+                onChange={(e) => setSubcategory(e.target.value)}
+                disabled={!category}
+                className={inputClass}
+              >
+                <option value="">None</option>
+                {subcategoryOptions.map((sub) => (
+                  <option key={sub} value={sub}>{BILL_SUBCATEGORY_LABELS[sub]}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -12,8 +12,8 @@ export type AccountViewProps = {
   chartData: ChartDataPoint[];
   transactionsOpen: boolean;
   onTransactionsToggle: () => void;
-  onDeselect: () => void;
   liveValue?: number;
+  livePricePerCoin?: number;
   isCrypto?: boolean;
   cryptoTimeRange?: CryptoTimeRange;
   onCryptoTimeRangeChange?: (range: CryptoTimeRange) => void;

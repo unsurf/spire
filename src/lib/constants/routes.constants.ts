@@ -5,6 +5,7 @@ export const ROUTES = {
   ACCOUNT_DETAIL: (id: string) => `/accounts/${id}`,
   INCOME: "/income",
   BILLS: "/bills",
+  BILLS_CALENDAR: "/bills/calendar",
   SETTINGS: "/settings",
   SIGN_IN: "/signin",
   REGISTER: "/register",

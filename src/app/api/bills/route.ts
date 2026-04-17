@@ -24,6 +24,8 @@ export async function GET() {
       accountName: b.account?.name ?? null,
       cycle: b.cycle,
       startDate: b.startDate.toISOString(),
+      category: b.category,
+      subcategory: b.subcategory,
     })),
   );
 }
@@ -39,7 +41,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { name, amount, accountId, cycle, startDate } = parsed.data;
+  const { name, amount, accountId, cycle, startDate, category, subcategory } = parsed.data;
 
   const bill = await prisma.bill.create({
     data: {
@@ -49,6 +51,8 @@ export async function POST(req: Request) {
       accountId: accountId ?? null,
       cycle,
       startDate: new Date(startDate),
+      category: category ?? null,
+      subcategory: subcategory ?? null,
     },
     include: { account: { select: { name: true } } },
   });
@@ -62,6 +66,8 @@ export async function POST(req: Request) {
       accountName: bill.account?.name ?? null,
       cycle: bill.cycle,
       startDate: bill.startDate.toISOString(),
+      category: bill.category,
+      subcategory: bill.subcategory,
     },
     { status: 201 },
   );

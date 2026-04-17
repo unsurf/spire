@@ -31,14 +31,26 @@ export function getLiveBalance(
 
 export function buildCryptoChartData(
   points: Array<{ date: string; price: number; ms: number }>,
-  quantity: number,
-  purchaseMs: number,
+  trades: Array<{ type: "BUY" | "SELL"; quantity: string; tradedAt: string }>,
 ): ChartDataPoint[] {
-  return points.map((p, i) => ({
-    idx: i,
-    date: p.date,
-    value: p.ms < purchaseMs ? 0 : Math.round(p.price * quantity * 100) / 100,
-  }));
+  const sorted = [...trades].sort(
+    (a, b) => new Date(a.tradedAt).getTime() - new Date(b.tradedAt).getTime(),
+  );
+
+  const result: ChartDataPoint[] = [];
+  let idx = 0;
+  for (const p of points) {
+    let holdings = 0;
+    for (const t of sorted) {
+      if (new Date(t.tradedAt).getTime() > p.ms) break;
+      const qty = parseFloat(t.quantity);
+      holdings += t.type === "BUY" ? qty : -qty;
+    }
+    if (holdings > 0) {
+      result.push({ idx: idx++, date: p.date, value: Math.round(p.price * holdings * 100) / 100 });
+    }
+  }
+  return result;
 }
 
 export function getCryptoTotalGrowth(

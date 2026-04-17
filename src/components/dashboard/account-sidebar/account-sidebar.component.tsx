@@ -32,7 +32,7 @@ export function AccountSidebar({
   liveCryptoPrices,
 }: AccountSidebarProps) {
   return (
-    <aside className="border-edge flex w-72 shrink-0 flex-col border-r">
+    <aside className="flex w-72 shrink-0 flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="bg-surface-raised border-edge grid grid-cols-3 rounded-lg border p-1 flex-1 mr-2">
