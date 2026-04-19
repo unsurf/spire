@@ -10,6 +10,10 @@ import {
   CHART_COLOR_PROJECTION,
   CHART_GRADIENT,
 } from "@/lib/constants/chart.constants";
+import { NetWorthBreakdown } from "../net-worth-breakdown";
+import { NetWorthDeltaChart } from "../net-worth-delta-chart";
+import { AccountBalancesChart } from "../account-balances-chart";
+import { GroupHistoryChart } from "../group-history-chart";
 import type { OverviewViewProps } from "./overview-view.types";
 
 export function OverviewView({
@@ -92,6 +96,15 @@ export function OverviewView({
           )}
         </div>
       </div>
+
+      {accounts.length > 0 && (
+        <div className="mb-6 flex flex-col gap-4">
+          <NetWorthBreakdown accounts={accounts} currency={currency} />
+          <NetWorthDeltaChart netWorthData={netWorthData} currency={currency} />
+          <GroupHistoryChart accounts={accounts} currency={currency} />
+          <AccountBalancesChart accounts={accounts} currency={currency} />
+        </div>
+      )}
 
       {oracleOn && (
         <OraclePanel
