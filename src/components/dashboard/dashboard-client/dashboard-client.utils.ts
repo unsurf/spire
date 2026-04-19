@@ -96,6 +96,7 @@ export function getAccountGroups(
 ): DashboardAccountGroup[] {
   const groups: DashboardAccountGroup[] = [
     { key: "accounts", label: "Accounts", accounts: [], total: 0 },
+    { key: "savings", label: "Savings", accounts: [], total: 0 },
     { key: "investments", label: "Investments", accounts: [], total: 0 },
     { key: "liabilities", label: "Liabilities", accounts: [], total: 0 },
     { key: "loan", label: "Loan", accounts: [], total: 0 },
@@ -104,16 +105,17 @@ export function getAccountGroups(
   for (const account of accounts) {
     const balance = getLiveBalance(account, liveCryptoPrices);
     const groupKey =
-      account.category === "CHEQUE" || account.category === "SAVINGS"
+      account.category === "CHEQUE"
         ? "accounts"
-        : account.category === "INVESTMENT" ||
-            account.category === "CRYPTO" ||
-            account.category === "ASSET" ||
-            account.category === "HIGH_GROWTH"
-          ? "investments"
-          : account.category === "EMERGENCY"
-            ? "liabilities"
-            : "loan";
+        : account.category === "SAVINGS" || account.category === "HIGH_GROWTH"
+          ? "savings"
+          : account.category === "INVESTMENT" ||
+              account.category === "CRYPTO" ||
+              account.category === "ASSET"
+            ? "investments"
+            : account.category === "EMERGENCY"
+              ? "liabilities"
+              : "loan";
 
     const target = groups.find((group) => group.key === groupKey);
     if (!target) continue;
@@ -130,7 +132,12 @@ export function getVisibleGroups(
 ): DashboardAccountGroup[] {
   return groups.filter((group) => {
     if (filter === "all") return true;
-    if (filter === "assets") return group.key === "accounts" || group.key === "investments";
+    if (filter === "assets")
+      return (
+        group.key === "accounts" ||
+        group.key === "savings" ||
+        group.key === "investments"
+      );
     return group.key === "liabilities" || group.key === "loan";
   });
 }

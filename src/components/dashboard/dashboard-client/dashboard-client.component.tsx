@@ -50,6 +50,7 @@ export default function DashboardClientComponent({
   const [sidebarFilter, setSidebarFilter] = useState<"all" | "assets" | "debts">("all");
   const [expandedGroups, setExpandedGroups] = useState<Record<DashboardAccountGroupKey, boolean>>({
     accounts: true,
+    savings: true,
     investments: true,
     liabilities: true,
     loan: true,

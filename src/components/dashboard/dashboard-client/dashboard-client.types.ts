@@ -48,11 +48,11 @@ export type DashboardClientProps = {
   initialSelectedId: string | null;
 };
 
-export type DashboardAccountGroupKey = "accounts" | "investments" | "liabilities" | "loan";
+export type DashboardAccountGroupKey = "accounts" | "savings" | "investments" | "liabilities" | "loan";
 
 export type DashboardAccountGroup = {
   key: DashboardAccountGroupKey;
-  label: "Accounts" | "Investments" | "Liabilities" | "Loan";
+  label: "Accounts" | "Savings" | "Investments" | "Liabilities" | "Loan";
   accounts: DashboardAccount[];
   total: number;
 };
