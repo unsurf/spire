@@ -28,7 +28,7 @@ COPY --from=builder /app/package.json ./package.json
 RUN npm install prisma dotenv && rm package.json
 
 COPY entrypoint.sh ./
-RUN chmod +x ./entrypoint.sh
+RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
 USER nextjs
 

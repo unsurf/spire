@@ -1,0 +1,4 @@
+# Force shell scripts to LF line endings on all platforms.
+# Without this, Windows Git clients check out .sh files with CRLF,
+# which causes "bad interpreter" errors inside Linux Docker containers.
+*.sh text eol=lf
