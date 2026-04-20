@@ -4,31 +4,31 @@ export const GROUP_HISTORY_SERIES: GroupHistorySeries[] = [
   {
     key: "accounts",
     label: "Accounts",
-    color: "var(--accent)",
+    color: "var(--data-1)",
     gradientId: "groupHistGradAccounts",
   },
   {
     key: "savings",
     label: "Savings",
-    color: "var(--accent-strong)",
+    color: "var(--data-3)",
     gradientId: "groupHistGradSavings",
   },
   {
     key: "investments",
     label: "Investments",
-    color: "var(--positive)",
+    color: "var(--data-2)",
     gradientId: "groupHistGradInvestments",
   },
   {
     key: "liabilities",
     label: "Emergency",
-    color: "var(--muted)",
+    color: "var(--data-5)",
     gradientId: "groupHistGradLiabilities",
   },
   {
     key: "loan",
     label: "Loans",
-    color: "var(--error)",
+    color: "var(--data-4)",
     gradientId: "groupHistGradLoan",
   },
 ];

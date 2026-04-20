@@ -23,6 +23,16 @@
   --color-error-soft: var(--error-soft);
   --color-error-border: var(--error-border);
   --color-on-error: var(--on-error);
+
+  /* Data palette — for charts, categories, and multi-series visualisations */
+  --color-data-1: var(--data-1);
+  --color-data-2: var(--data-2);
+  --color-data-3: var(--data-3);
+  --color-data-4: var(--data-4);
+  --color-data-5: var(--data-5);
+  --color-data-6: var(--data-6);
+  --color-data-7: var(--data-7);
+  --color-data-8: var(--data-8);
 }
 
 :root {
@@ -35,10 +45,10 @@
   --edge-strong: #333333;
   --input-bg: #1c1c1c;
   --input-text: #fafafa;
-  --accent: #9882AC;
-  --accent-strong: #A393BF;
-  --accent-soft: #3d2716;
-  --on-accent: #111111;
+  --accent: #D97458;
+  --accent-strong: #E08267;
+  --accent-soft: #2b1208;
+  --on-accent: #1a0800;
 
   /* Positive / gain states */
   --positive: #4ade80;
@@ -50,6 +60,16 @@
   --error-soft: rgba(239, 68, 68, 0.12);
   --error-border: rgba(239, 68, 68, 0.25);
   --on-error: #fafafa;
+
+  /* Data palette — 8 perceptually distinct hues for charts and categories */
+  --data-1: #38bdf8; /* sky     */
+  --data-2: #fbbf24; /* amber   */
+  --data-3: #2dd4bf; /* teal    */
+  --data-4: #f472b6; /* pink    */
+  --data-5: #818cf8; /* indigo  */
+  --data-6: #fb923c; /* orange  */
+  --data-7: #a3e635; /* lime    */
+  --data-8: #94a3b8; /* slate   */
 }
 
 html {
