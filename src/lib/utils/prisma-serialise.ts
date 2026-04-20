@@ -5,7 +5,7 @@
  * These functions explicitly map each field to the plain types expected by
  * Client Components, replacing the JSON.parse(JSON.stringify(...)) antipattern.
  */
-import type { DashboardAccount, DashboardTrade } from "@/components/dashboard/dashboard-client/dashboard-client.types";
+import type { DashboardAccount, DashboardBill, DashboardGoal, DashboardTrade } from "@/components/dashboard/dashboard-client/dashboard-client.types";
 import type { AccountDetailAccount } from "@/components/accounts/account-detail-client/account-detail-client.types";
 import type {
   IncomeItem,
@@ -210,5 +210,45 @@ export function serialiseBills(bills: PrismaBill[]): BillItem[] {
     startDate: b.startDate.toISOString(),
     category: b.category as BillItem["category"],
     subcategory: b.subcategory as BillItem["subcategory"],
+  }));
+}
+
+type PrismaDashboardBill = {
+  id: string;
+  name: string;
+  amount: { toString(): string } | null;
+  cycle: string;
+  category: string | null;
+  subcategory: string | null;
+};
+
+export function serialiseDashboardBills(bills: PrismaDashboardBill[]): DashboardBill[] {
+  return bills.map((b) => ({
+    id: b.id,
+    name: b.name,
+    amount: b.amount ? b.amount.toString() : null,
+    cycle: b.cycle as DashboardBill["cycle"],
+    category: b.category as DashboardBill["category"],
+    subcategory: b.subcategory as DashboardBill["subcategory"],
+  }));
+}
+
+type PrismaGoal = {
+  id: string;
+  name: string;
+  targetAmount: { toString(): string };
+  accountId: string | null;
+  deadline: Date | null;
+  createdAt: Date;
+};
+
+export function serialiseGoals(goals: PrismaGoal[]): DashboardGoal[] {
+  return goals.map((g) => ({
+    id: g.id,
+    name: g.name,
+    targetAmount: g.targetAmount.toString(),
+    accountId: g.accountId,
+    deadline: g.deadline ? g.deadline.toISOString() : null,
+    createdAt: g.createdAt.toISOString(),
   }));
 }

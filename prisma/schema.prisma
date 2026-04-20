@@ -87,6 +87,7 @@ model User {
   incomes  Income[]
   accounts Account[]
   bills    Bill[]
+  goals    Goal[]
 }
 
 model Income {
@@ -123,6 +124,7 @@ model Account {
   balanceEntries BalanceEntry[]
   bills          Bill[]
   trades         Trade[]
+  goals          Goal[]
 }
 
 model Trade {
@@ -175,4 +177,17 @@ model BalanceEntry {
   recordedAt DateTime @default(now())
 
   account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String
+  targetAmount Decimal   @db.Decimal(12, 2)
+  accountId    String?
+  deadline     DateTime?
+  createdAt    DateTime  @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
 }

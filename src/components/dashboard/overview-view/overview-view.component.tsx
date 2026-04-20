@@ -13,11 +13,14 @@ import {
 import { NetWorthBreakdown } from "../net-worth-breakdown";
 import { NetWorthDeltaChart } from "../net-worth-delta-chart";
 import { AccountBalancesChart } from "../account-balances-chart";
-import { GroupHistoryChart } from "../group-history-chart";
+import { MonthlySnapshot } from "../monthly-snapshot";
+import { GoalProgress } from "../goal-progress";
 import type { OverviewViewProps } from "./overview-view.types";
 
 export function OverviewView({
   accounts,
+  bills,
+  goals,
   currency,
   oracleOn,
   horizon,
@@ -27,6 +30,8 @@ export function OverviewView({
   netWorthDelta,
   netWorthChartData,
   showOracle,
+  onAddGoal,
+  onDeleteGoal,
 }: OverviewViewProps) {
   return (
     <>
@@ -101,7 +106,15 @@ export function OverviewView({
         <div className="mb-6 flex flex-col gap-4">
           <NetWorthBreakdown accounts={accounts} currency={currency} />
           <NetWorthDeltaChart netWorthData={netWorthData} currency={currency} />
-          <GroupHistoryChart accounts={accounts} currency={currency} />
+          <MonthlySnapshot accounts={accounts} bills={bills} currency={currency} />
+          <GoalProgress
+            goals={goals}
+            accounts={accounts}
+            netWorth={netWorth}
+            currency={currency}
+            onAddGoal={onAddGoal}
+            onDeleteGoal={onDeleteGoal}
+          />
           <AccountBalancesChart accounts={accounts} currency={currency} />
         </div>
       )}

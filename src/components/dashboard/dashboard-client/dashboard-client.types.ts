@@ -1,4 +1,4 @@
-import type { AccountCategory, PayCycle, SplitType } from "@/generated/prisma/client";
+import type { AccountCategory, BillCycle, BillCategory, BillSubcategory, PayCycle, SplitType } from "@/generated/prisma/client";
 
 export type DashboardBalanceEntry = {
   id: string;
@@ -41,8 +41,28 @@ export type DashboardAccount = {
   trades: DashboardTrade[];
 };
 
+export type DashboardBill = {
+  id: string;
+  name: string;
+  amount: string | null;
+  cycle: BillCycle;
+  category: BillCategory | null;
+  subcategory: BillSubcategory | null;
+};
+
+export type DashboardGoal = {
+  id: string;
+  name: string;
+  targetAmount: string;
+  accountId: string | null;
+  deadline: string | null;
+  createdAt: string;
+};
+
 export type DashboardClientProps = {
   accounts: DashboardAccount[];
+  bills: DashboardBill[];
+  goals: DashboardGoal[];
   userName: string;
   currency: string;
   initialSelectedId: string | null;

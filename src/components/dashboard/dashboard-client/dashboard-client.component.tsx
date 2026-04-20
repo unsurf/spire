@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { z } from "zod";
 import { Eye, EyeOff, PanelLeft, ExternalLink } from "lucide-react";
 import { AddAccountModal } from "../add-account-modal";
+import { AddGoalModal } from "../add-goal-modal";
 import { AccountView } from "../account-view";
 import { OverviewView } from "../overview-view";
 import { AccountSidebar } from "../account-sidebar";
@@ -13,6 +14,7 @@ import { CRYPTO_TIME_RANGE_DAYS, type CryptoTimeRange } from "@/lib/constants/cr
 import type {
   DashboardAccountGroupKey,
   DashboardAccount,
+  DashboardGoal,
   DashboardClientProps,
   ChartDataPoint,
 } from "./dashboard-client.types";
@@ -38,11 +40,15 @@ const historySchema = z.object({
 
 export default function DashboardClientComponent({
   accounts: initial,
+  bills,
+  goals: initialGoals,
   userName,
   currency,
   initialSelectedId,
 }: DashboardClientProps) {
   const [accounts, setAccounts] = useState(initial);
+  const [goals, setGoals] = useState<DashboardGoal[]>(initialGoals);
+  const [showAddGoal, setShowAddGoal] = useState(false);
   const [oracleOn, setOracleOn] = useState(false);
   const [horizon, setHorizon] = useState<OracleHorizon>("1y");
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -170,6 +176,16 @@ export default function DashboardClientComponent({
     setShowAddAccount(false);
   }, []);
 
+  const handleGoalAdded = useCallback((goal: DashboardGoal) => {
+    setGoals((prev) => [...prev, goal]);
+    setShowAddGoal(false);
+  }, []);
+
+  const handleDeleteGoal = useCallback(async (id: string) => {
+    await fetch(`/api/goals/${id}`, { method: "DELETE" });
+    setGoals((prev) => prev.filter((g) => g.id !== id));
+  }, []);
+
   const toggleGroup = useCallback((groupKey: DashboardAccountGroupKey) => {
     setExpandedGroups((prev) => ({ ...prev, [groupKey]: !prev[groupKey] }));
   }, []);
@@ -290,6 +306,8 @@ export default function DashboardClientComponent({
         ) : (
           <OverviewView
             accounts={accounts}
+            bills={bills}
+            goals={goals}
             currency={currency}
             oracleOn={oracleOn}
             horizon={horizon}
@@ -299,6 +317,8 @@ export default function DashboardClientComponent({
             netWorthDelta={netWorthDelta}
             netWorthChartData={netWorthChartData}
             showOracle={showOracle}
+            onAddGoal={() => setShowAddGoal(true)}
+            onDeleteGoal={handleDeleteGoal}
           />
         )}
       </div>
@@ -308,6 +328,15 @@ export default function DashboardClientComponent({
           onClose={() => setShowAddAccount(false)}
           onAdded={handleAccountAdded}
           currency={currency}
+        />
+      )}
+
+      {showAddGoal && (
+        <AddGoalModal
+          accounts={accounts}
+          currency={currency}
+          onClose={() => setShowAddGoal(false)}
+          onAdded={handleGoalAdded}
         />
       )}
     </div>
