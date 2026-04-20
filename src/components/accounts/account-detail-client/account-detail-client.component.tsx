@@ -12,6 +12,7 @@ import {
   Pencil,
   Check,
   X,
+  Minus,
   ArrowDownCircle,
   ArrowUpCircle,
 } from "lucide-react";
@@ -631,6 +632,74 @@ export default function AccountDetailClientComponent({
               />
             )}
           </div>
+
+          {account.balanceEntries.length > 0 && (
+            <div className="bg-surface-raised border-edge mb-6 overflow-hidden rounded-xl border">
+              <div className="border-edge border-b px-5 py-3.5">
+                <p className="text-muted text-xs font-semibold uppercase tracking-wide">
+                  Balance entries
+                </p>
+              </div>
+              <div className="divide-edge divide-y">
+                {[...account.balanceEntries].reverse().map((entry, i, arr) => {
+                  const prev = arr[i + 1];
+                  const current = Number(entry.balance);
+                  const delta = prev !== undefined ? current - Number(prev.balance) : null;
+                  const up = delta !== null && delta > 0;
+                  const down = delta !== null && delta < 0;
+                  return (
+                    <div key={entry.id} className="flex items-center justify-between px-5 py-3.5">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span
+                          className={`inline-flex shrink-0 items-center rounded-md p-2 ${
+                            up
+                              ? "bg-positive-soft text-positive"
+                              : down
+                                ? "bg-error-soft text-error"
+                                : "bg-edge text-muted"
+                          }`}
+                        >
+                          {up ? (
+                            <TrendingUp size={10} />
+                          ) : down ? (
+                            <TrendingDown size={10} />
+                          ) : (
+                            <Minus size={10} />
+                          )}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-on-surface text-sm tabular-nums">
+                            {delta !== null ? (
+                              <span className={up ? "text-positive" : down ? "text-error" : "text-muted"}>
+                                {up ? "+" : ""}{formatCurrency(delta, currency)}
+                              </span>
+                            ) : (
+                              <span className="text-muted text-xs">Initial entry</span>
+                            )}
+                          </p>
+                          {entry.note && (
+                            <p className="text-subtle truncate text-xs">{entry.note}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-on-surface text-sm font-semibold tabular-nums">
+                          {formatCurrency(current, currency)}
+                        </p>
+                        <p className="text-subtle text-xs">
+                          {new Date(entry.recordedAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="bg-surface-raised border-edge rounded-xl border p-6">

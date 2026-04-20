@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, ChevronRight, Plus, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Minus, TrendingUp, TrendingDown } from "lucide-react";
 import MaskedValue from "@/components/ui/masked-value";
 import { BalanceChart } from "@/components/balance-chart";
 import { ACCOUNT_CATEGORY_LABELS } from "@/lib/utils";
@@ -274,27 +274,87 @@ export function AccountView({
                 </div>
               )
             ) : (
-              <div className="flex flex-col gap-3 p-4">
-                {[...selectedAccount.balanceEntries]
-                  .slice(-5)
-                  .reverse()
-                  .map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="border-edge flex items-center justify-between rounded-lg border px-3 py-2"
-                    >
-                      <div>
-                        <p className="text-on-surface text-sm">
-                          {new Date(entry.recordedAt).toLocaleDateString()}
-                        </p>
-                        <p className="text-subtle text-xs">{entry.note ?? "No note"}</p>
-                      </div>
-                      <p className="text-on-surface text-sm font-semibold">
-                        <MaskedValue amount={Number(entry.balance)} currency={currency} />
-                      </p>
+              selectedAccount.balanceEntries.length === 0 ? (
+                <p className="text-subtle px-4 py-4 text-sm">
+                  No balance entries yet — update the balance in{" "}
+                  <Link
+                    href={ROUTES.ACCOUNT_DETAIL(selectedAccount.id)}
+                    className="text-accent hover:underline"
+                  >
+                    Manage account
+                  </Link>
+                </p>
+              ) : (
+                <div className="divide-edge divide-y">
+                  {[...selectedAccount.balanceEntries]
+                    .slice(-8)
+                    .reverse()
+                    .map((entry, i, arr) => {
+                      const prev = arr[i + 1];
+                      const current = Number(entry.balance);
+                      const delta = prev !== undefined ? current - Number(prev.balance) : null;
+                      const up = delta !== null && delta > 0;
+                      const down = delta !== null && delta < 0;
+                      return (
+                        <div key={entry.id} className="flex items-center justify-between px-4 py-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span
+                              className={`inline-flex shrink-0 items-center rounded-md p-2 ${
+                                up
+                                  ? "bg-positive-soft text-positive"
+                                  : down
+                                    ? "bg-error-soft text-error"
+                                    : "bg-edge text-muted"
+                              }`}
+                            >
+                              {up ? (
+                                <TrendingUp size={10} />
+                              ) : down ? (
+                                <TrendingDown size={10} />
+                              ) : (
+                                <Minus size={10} />
+                              )}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-on-surface text-sm tabular-nums">
+                                {delta !== null && (
+                                  <span className={`mr-1.5 ${up ? "text-positive" : down ? "text-error" : "text-muted"}`}>
+                                    {up ? "+" : ""}{formatCurrency(delta, currency)}
+                                  </span>
+                                )}
+                              </p>
+                              {entry.note && (
+                                <p className="text-subtle truncate text-xs">{entry.note}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="ml-4 shrink-0 text-right">
+                            <p className="text-on-surface text-sm font-semibold tabular-nums">
+                              <MaskedValue amount={current} currency={currency} />
+                            </p>
+                            <p className="text-subtle text-xs">
+                              {new Date(entry.recordedAt).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "2-digit",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {selectedAccount.balanceEntries.length > 8 && (
+                    <div className="px-4 py-3">
+                      <Link
+                        href={ROUTES.ACCOUNT_DETAIL(selectedAccount.id)}
+                        className="text-accent text-xs hover:underline"
+                      >
+                        View all {selectedAccount.balanceEntries.length} entries in Manage account
+                      </Link>
                     </div>
-                  ))}
-              </div>
+                  )}
+                </div>
+              )
             )}
           </div>
         )}
