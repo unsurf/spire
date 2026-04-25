@@ -85,7 +85,7 @@ Then:
 docker compose up -d
 ```
 
-Spire is now running at `http://localhost:3000`.
+Spire is now running at `http://localhost:3000` (or whichever `APP_PORT` you set).
 
 On first run, create your account via the register page. The database is initialised automatically.
 
@@ -111,11 +111,11 @@ All configuration is via environment variables in `.env`. See `.env.example` for
 
 ```
 spire.example.com {
-    reverse_proxy localhost:3000
+    reverse_proxy localhost:3000  # change if APP_PORT is set
 }
 ```
 
-Nginx, Traefik, and other proxies work the same way — proxy port 3000.
+Nginx, Traefik, and other proxies work the same way — proxy whichever port `APP_PORT` is set to (default `3000`).
 
 ## Development
 
