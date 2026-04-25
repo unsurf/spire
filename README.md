@@ -11,20 +11,76 @@ A self-hosted financial management platform. Track accounts, income, and long-te
 - Balance history and growth projections (Oracle)
 - Fully self-hosted — your data never leaves your server
 
-## Quick Start (Docker)
+## Docker Image
+
+Pre-built images are published to Docker Hub on every push to `main` and on every release tag.
+
+```
+docker pull unsurf/spire:latest
+```
+
+**Available tags**
+
+| Tag | When it updates |
+|---|---|
+| `latest` | Every push to `main` |
+| `main` | Every push to `main` |
+| `1.2.3` | On a `v1.2.3` git tag |
+| `1.2` | On a `v1.2.*` git tag |
+
+**Supported architectures**
+
+| Architecture | Runs on |
+|---|---|
+| `linux/amd64` | Standard x86-64 servers, VMs, most cloud providers |
+| `linux/arm64` | Raspberry Pi 4/5, Oracle Ampere, AWS Graviton, Apple Silicon VMs |
+
+Docker will automatically pull the correct variant for your platform.
+
+## Quick Start
 
 **Requirements:** Docker and Docker Compose.
 
+Create a `docker-compose.yml`:
+
+```yaml
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: spire
+      POSTGRES_USER: spire
+      POSTGRES_PASSWORD: spirepassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spire -d spire"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: unsurf/spire:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://spire:spirepassword@db:5432/spire
+      AUTH_SECRET: change-me-in-production
+      NEXTAUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+```
+
+Then:
+
 ```bash
-# 1. Clone the repo
-git clone https://github.com/unsurf/spire.git
-cd spire
-
-# 2. Configure environment
-cp .env.example .env
-# Edit .env — set AUTH_SECRET, DATABASE_URL, and optionally NEXTAUTH_URL
-
-# 3. Start
 docker compose up -d
 ```
 
@@ -61,8 +117,12 @@ Nginx, Traefik, and other proxies work the same way — proxy port 3000.
 
 ## Development
 
+The `docker-compose.yml` in the repo builds from source — use this for local development.
+
 ```bash
-# Install dependencies
+# Clone and install
+git clone https://github.com/unsurf/spire.git
+cd spire
 npm install
 
 # Generate and apply database migrations
