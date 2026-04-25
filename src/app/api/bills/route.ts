@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { bills, accounts } from "@/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { createBillSchema } from "@/lib/schemas/bill.schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function GET() {
   const session = await auth();
@@ -9,17 +12,17 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const bills = await prisma.bill.findMany({
-    where: { userId: session.user.id },
-    include: { account: { select: { name: true } } },
-    orderBy: { startDate: "asc" },
+  const rows = await db.query.bills.findMany({
+    where: eq(bills.userId, session.user.id),
+    with: { account: { columns: { name: true } } },
+    orderBy: asc(bills.startDate),
   });
 
   return NextResponse.json(
-    bills.map((b) => ({
+    rows.map((b) => ({
       id: b.id,
       name: b.name,
-      amount: b.amount ? b.amount.toString() : null,
+      amount: b.amount ?? null,
       accountId: b.accountId,
       accountName: b.account?.name ?? null,
       cycle: b.cycle,
@@ -43,27 +46,33 @@ export async function POST(req: Request) {
 
   const { name, amount, accountId, cycle, startDate, category, subcategory } = parsed.data;
 
-  const bill = await prisma.bill.create({
-    data: {
+  const [bill] = await db
+    .insert(bills)
+    .values({
+      id: createId(),
       userId: session.user.id,
       name,
-      amount: amount ?? null,
+      amount: amount?.toString() ?? null,
       accountId: accountId ?? null,
       cycle,
       startDate: new Date(startDate),
       category: category ?? null,
       subcategory: subcategory ?? null,
-    },
-    include: { account: { select: { name: true } } },
+    })
+    .returning();
+
+  const billWithAccount = await db.query.bills.findFirst({
+    where: eq(bills.id, bill.id),
+    with: { account: { columns: { name: true } } },
   });
 
   return NextResponse.json(
     {
       id: bill.id,
       name: bill.name,
-      amount: bill.amount ? bill.amount.toString() : null,
+      amount: bill.amount ?? null,
       accountId: bill.accountId,
-      accountName: bill.account?.name ?? null,
+      accountName: billWithAccount?.account?.name ?? null,
       cycle: bill.cycle,
       startDate: bill.startDate.toISOString(),
       category: bill.category,

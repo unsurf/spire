@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { accounts, balanceEntries } from "@/db/schema";
+import { eq, asc, desc } from "drizzle-orm";
 import { createAccountSchema } from "@/lib/schemas/account.schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function GET() {
   const session = await auth();
@@ -9,18 +12,18 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const accounts = await prisma.account.findMany({
-    where: { userId: session.user.id },
-    include: {
+  const rows = await db.query.accounts.findMany({
+    where: eq(accounts.userId, session.user.id),
+    with: {
       balanceEntries: {
-        orderBy: { recordedAt: "desc" },
-        take: 2,
+        orderBy: desc(balanceEntries.recordedAt),
+        limit: 2,
       },
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: asc(accounts.createdAt),
   });
 
-  return NextResponse.json(accounts);
+  return NextResponse.json(rows);
 }
 
 export async function POST(req: Request) {
@@ -39,18 +42,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const account = await prisma.account.create({
-    data: {
+  const [account] = await db
+    .insert(accounts)
+    .values({
+      id: createId(),
       userId: session.user.id,
       name: parsed.data.name,
       category: parsed.data.category,
       annualGrowthRate: parsed.data.annualGrowthRate ?? null,
       coinId: parsed.data.coinId ?? null,
       coinSymbol: parsed.data.coinSymbol ?? null,
-      coinQuantity: parsed.data.coinQuantity ?? null,
+      coinQuantity: parsed.data.coinQuantity?.toString() ?? null,
       oracleEnabled: true,
-    },
-  });
+    })
+    .returning();
 
   return NextResponse.json(account, { status: 201 });
 }

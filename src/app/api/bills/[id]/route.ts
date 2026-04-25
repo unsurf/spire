@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { bills } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { updateBillSchema } from "@/lib/schemas/bill.schema";
 
 type Params = { params: Promise<{ id: string }> };
@@ -12,8 +14,10 @@ export async function PATCH(req: Request, { params }: Params) {
   }
 
   const { id } = await params;
-  const existing = await prisma.bill.findUnique({ where: { id } });
-  if (!existing || existing.userId !== session.user.id) {
+  const existing = await db.query.bills.findFirst({
+    where: and(eq(bills.id, id), eq(bills.userId, session.user.id)),
+  });
+  if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -24,26 +28,31 @@ export async function PATCH(req: Request, { params }: Params) {
 
   const { name, amount, accountId, cycle, startDate, category, subcategory } = parsed.data;
 
-  const bill = await prisma.bill.update({
-    where: { id },
-    data: {
+  const [bill] = await db
+    .update(bills)
+    .set({
       name,
-      amount: amount ?? null,
+      amount: amount?.toString() ?? null,
       accountId: accountId ?? null,
       cycle,
       startDate: new Date(startDate),
       category: category ?? null,
       subcategory: subcategory ?? null,
-    },
-    include: { account: { select: { name: true } } },
+    })
+    .where(eq(bills.id, id))
+    .returning();
+
+  const billWithAccount = await db.query.bills.findFirst({
+    where: eq(bills.id, bill.id),
+    with: { account: { columns: { name: true } } },
   });
 
   return NextResponse.json({
     id: bill.id,
     name: bill.name,
-    amount: bill.amount ? bill.amount.toString() : null,
+    amount: bill.amount ?? null,
     accountId: bill.accountId,
-    accountName: bill.account?.name ?? null,
+    accountName: billWithAccount?.account?.name ?? null,
     cycle: bill.cycle,
     startDate: bill.startDate.toISOString(),
     category: bill.category,
@@ -58,11 +67,13 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const { id } = await params;
-  const existing = await prisma.bill.findUnique({ where: { id } });
-  if (!existing || existing.userId !== session.user.id) {
+  const existing = await db.query.bills.findFirst({
+    where: and(eq(bills.id, id), eq(bills.userId, session.user.id)),
+  });
+  if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await prisma.bill.delete({ where: { id } });
+  await db.delete(bills).where(eq(bills.id, id));
   return new NextResponse(null, { status: 204 });
 }

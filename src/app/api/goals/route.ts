@@ -1,25 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { goals } from "@/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { createGoalSchema } from "@/lib/schemas/goal.schema";
-
-function serialiseGoal(g: {
-  id: string;
-  name: string;
-  targetAmount: { toString(): string };
-  accountId: string | null;
-  deadline: Date | null;
-  createdAt: Date;
-}) {
-  return {
-    id: g.id,
-    name: g.name,
-    targetAmount: g.targetAmount.toString(),
-    accountId: g.accountId,
-    deadline: g.deadline ? g.deadline.toISOString() : null,
-    createdAt: g.createdAt.toISOString(),
-  };
-}
+import { createId } from "@paralleldrive/cuid2";
 
 export async function GET() {
   const session = await auth();
@@ -27,12 +12,22 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const goals = await prisma.goal.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "asc" },
-  });
+  const rows = await db
+    .select()
+    .from(goals)
+    .where(eq(goals.userId, session.user.id))
+    .orderBy(asc(goals.createdAt));
 
-  return NextResponse.json(goals.map(serialiseGoal));
+  return NextResponse.json(
+    rows.map((g) => ({
+      id: g.id,
+      name: g.name,
+      targetAmount: g.targetAmount,
+      accountId: g.accountId,
+      deadline: g.deadline ? g.deadline.toISOString() : null,
+      createdAt: g.createdAt.toISOString(),
+    })),
+  );
 }
 
 export async function POST(req: Request) {
@@ -48,15 +43,27 @@ export async function POST(req: Request) {
 
   const { name, targetAmount, accountId, deadline } = parsed.data;
 
-  const goal = await prisma.goal.create({
-    data: {
+  const [goal] = await db
+    .insert(goals)
+    .values({
+      id: createId(),
       userId: session.user.id,
       name,
-      targetAmount,
+      targetAmount: targetAmount.toString(),
       accountId: accountId ?? null,
       deadline: deadline ? new Date(deadline) : null,
-    },
-  });
+    })
+    .returning();
 
-  return NextResponse.json(serialiseGoal(goal), { status: 201 });
+  return NextResponse.json(
+    {
+      id: goal.id,
+      name: goal.name,
+      targetAmount: goal.targetAmount,
+      accountId: goal.accountId,
+      deadline: goal.deadline ? goal.deadline.toISOString() : null,
+      createdAt: goal.createdAt.toISOString(),
+    },
+    { status: 201 },
+  );
 }

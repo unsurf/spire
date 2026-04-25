@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { incomes } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 
 export async function DELETE(
   _req: Request,
@@ -13,14 +15,14 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const income = await prisma.income.findFirst({
-    where: { id, userId: session.user.id },
+  const existing = await db.query.incomes.findFirst({
+    where: and(eq(incomes.id, id), eq(incomes.userId, session.user.id)),
   });
 
-  if (!income) {
+  if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await prisma.income.delete({ where: { id } });
+  await db.delete(incomes).where(eq(incomes.id, id));
   return NextResponse.json({ success: true });
 }

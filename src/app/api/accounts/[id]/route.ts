@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { accounts, balanceEntries, accountSplits, incomes } from "@/db/schema";
+import { eq, and, asc } from "drizzle-orm";
 import { updateAccountSchema } from "@/lib/schemas/account.schema";
 
 export async function GET(
@@ -14,13 +16,11 @@ export async function GET(
 
   const { id } = await params;
 
-  const account = await prisma.account.findFirst({
-    where: { id, userId: session.user.id },
-    include: {
-      balanceEntries: { orderBy: { recordedAt: "asc" } },
-      splits: {
-        include: { income: true },
-      },
+  const account = await db.query.accounts.findFirst({
+    where: and(eq(accounts.id, id), eq(accounts.userId, session.user.id)),
+    with: {
+      balanceEntries: { orderBy: asc(balanceEntries.recordedAt) },
+      splits: { with: { income: true } },
     },
   });
 
@@ -52,31 +52,26 @@ export async function PATCH(
     );
   }
 
-  const account = await prisma.account.findFirst({
-    where: { id, userId: session.user.id },
+  const existing = await db.query.accounts.findFirst({
+    where: and(eq(accounts.id, id), eq(accounts.userId, session.user.id)),
   });
 
-  if (!account) {
+  if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const updated = await prisma.account.update({
-    where: { id },
-    data: {
-      name: parsed.data.name ?? account.name,
-      oracleEnabled: parsed.data.oracleEnabled ?? account.oracleEnabled,
-      annualGrowthRate:
-        parsed.data.annualGrowthRate !== undefined
-          ? parsed.data.annualGrowthRate
-          : account.annualGrowthRate,
-      ...(parsed.data.coinQuantity !== undefined && {
-        coinQuantity: parsed.data.coinQuantity,
-      }),
-      ...(parsed.data.coinSymbol !== undefined && {
-        coinSymbol: parsed.data.coinSymbol,
-      }),
-    },
-  });
+  const updateData: Partial<typeof accounts.$inferInsert> = {};
+  if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
+  if (parsed.data.oracleEnabled !== undefined) updateData.oracleEnabled = parsed.data.oracleEnabled;
+  if (parsed.data.annualGrowthRate !== undefined) updateData.annualGrowthRate = parsed.data.annualGrowthRate;
+  if (parsed.data.coinQuantity !== undefined) updateData.coinQuantity = parsed.data.coinQuantity?.toString() ?? null;
+  if (parsed.data.coinSymbol !== undefined) updateData.coinSymbol = parsed.data.coinSymbol;
+
+  const [updated] = await db
+    .update(accounts)
+    .set(updateData)
+    .where(eq(accounts.id, id))
+    .returning();
 
   return NextResponse.json(updated);
 }
@@ -92,14 +87,14 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const account = await prisma.account.findFirst({
-    where: { id, userId: session.user.id },
+  const existing = await db.query.accounts.findFirst({
+    where: and(eq(accounts.id, id), eq(accounts.userId, session.user.id)),
   });
 
-  if (!account) {
+  if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await prisma.account.delete({ where: { id } });
+  await db.delete(accounts).where(eq(accounts.id, id));
   return NextResponse.json({ success: true });
 }
