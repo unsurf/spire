@@ -64,12 +64,13 @@ services:
     image: unsurf/spire:latest
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:${APP_PORT:-3000}"
     environment:
       DATABASE_URL: postgresql://spire:spirepassword@db:5432/spire
       AUTH_SECRET: change-me-in-production
       NEXTAUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: "true"
+      PORT: ${APP_PORT:-3000}
     depends_on:
       db:
         condition: service_healthy
@@ -104,6 +105,7 @@ All configuration is via environment variables in `.env`. See `.env.example` for
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
 | `AUTH_SECRET` | Yes | Random secret for session signing (`openssl rand -base64 32`) |
 | `NEXTAUTH_URL` | Yes (prod) | Full public URL of your Spire instance |
+| `APP_PORT` | No | Port Spire listens on (default: `3000`). Update `NEXTAUTH_URL` to match. |
 
 ## Reverse Proxy (Caddy example)
 

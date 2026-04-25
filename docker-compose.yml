@@ -20,13 +20,14 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:${APP_PORT:-3000}"
     environment:
       DATABASE_URL: postgresql://spire:spirepassword@db:5432/spire?schema=public
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-in-production}
       AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       AUTH_TRUST_HOST: "true"
+      PORT: ${APP_PORT:-3000}
     depends_on:
       db:
         condition: service_healthy
