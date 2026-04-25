@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { TradeType } from "@/generated/prisma/client";
+import { tradeTypeEnum } from "@/db/schema";
 
 export const createTradeSchema = z.object({
-  type: z.nativeEnum(TradeType),
+  type: z.enum(tradeTypeEnum.enumValues),
   quantity: z.number().positive("Quantity must be positive"),
   price: z.number().positive("Price must be positive"),
   tradedAt: z.string().refine((v) => !isNaN(Date.parse(v)), "Invalid date"),

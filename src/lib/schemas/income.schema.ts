@@ -1,16 +1,16 @@
 import { z } from "zod";
-import { AccountCategory, PayCycle, SplitType } from "@/generated/prisma/client";
+import { payCycleEnum, splitTypeEnum } from "@/db/schema";
 
 export const createIncomeSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   amount: z.number().finite().positive("Amount must be positive"),
-  cycle: z.nativeEnum(PayCycle),
+  cycle: z.enum(payCycleEnum.enumValues),
   lastPaidAt: z.string().refine((v) => !isNaN(Date.parse(v)), "Invalid date").nullable().optional(),
 });
 
 export const splitSchema = z.object({
   accountId: z.string().min(1),
-  type: z.nativeEnum(SplitType),
+  type: z.enum(splitTypeEnum.enumValues),
   value: z.number().finite().positive(),
 });
 
