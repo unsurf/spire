@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { accounts, users, bills, goals, balanceEntries, accountSplits, incomes, trades } from "@/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import DashboardClient from "@/components/dashboard/dashboard-client";
 import { ROUTES, QUERY_PARAMS } from "@/lib/constants/routes.constants";
@@ -17,40 +19,40 @@ export default async function DashboardPage({
   const session = await auth();
   if (!session?.user?.id) redirect(ROUTES.SIGN_IN);
 
-  const [params, accounts, user, bills, goals] = await Promise.all([
+  const [params, accountRows, userRow, billRows, goalRows] = await Promise.all([
     searchParams,
-    prisma.account.findMany({
-      where: { userId: session.user.id },
-      include: {
-        balanceEntries: { orderBy: { recordedAt: "asc" } },
-        splits: { include: { income: true } },
-        trades: { orderBy: { tradedAt: "asc" } },
+    db.query.accounts.findMany({
+      where: eq(accounts.userId, session.user.id),
+      with: {
+        balanceEntries: { orderBy: asc(balanceEntries.recordedAt) },
+        splits: { with: { income: true } },
+        trades: { orderBy: asc(trades.tradedAt) },
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: asc(accounts.createdAt),
     }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { name: true, currency: true, onboardingComplete: true },
+    db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: { name: true, currency: true, onboardingComplete: true },
     }),
-    prisma.bill.findMany({
-      where: { userId: session.user.id },
-      select: { id: true, name: true, amount: true, cycle: true, category: true, subcategory: true },
+    db.query.bills.findMany({
+      where: eq(bills.userId, session.user.id),
+      columns: { id: true, name: true, amount: true, cycle: true, category: true, subcategory: true },
     }),
-    prisma.goal.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "asc" },
+    db.query.goals.findMany({
+      where: eq(goals.userId, session.user.id),
+      orderBy: asc(goals.createdAt),
     }),
   ]);
 
-  if (!user?.onboardingComplete) redirect(ROUTES.ONBOARDING);
+  if (!userRow?.onboardingComplete) redirect(ROUTES.ONBOARDING);
 
   return (
     <DashboardClient
-      accounts={serialiseDashboardAccounts(accounts)}
-      bills={serialiseDashboardBills(bills)}
-      goals={serialiseGoals(goals)}
-      userName={user?.name ?? ""}
-      currency={user?.currency ?? "USD"}
+      accounts={serialiseDashboardAccounts(accountRows)}
+      bills={serialiseDashboardBills(billRows)}
+      goals={serialiseGoals(goalRows)}
+      userName={userRow?.name ?? ""}
+      currency={userRow?.currency ?? "USD"}
       initialSelectedId={params[QUERY_PARAMS.ACCOUNT] ?? null}
     />
   );
