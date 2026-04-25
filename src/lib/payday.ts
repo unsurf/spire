@@ -1,4 +1,4 @@
-import type { PayCycle } from "@/generated/prisma/client";
+import type { PayCycle } from "@/db/schema";
 
 export type PayDayConfig = {
   cycle: PayCycle;

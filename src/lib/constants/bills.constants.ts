@@ -1,4 +1,4 @@
-import type { BillCategory, BillSubcategory } from "@/generated/prisma/client";
+import type { BillCategory, BillSubcategory } from "@/db/schema";
 
 export const BILL_CATEGORY_LABELS: Record<BillCategory, string> = {
   LIVING_EXPENSES: "Living Expenses",

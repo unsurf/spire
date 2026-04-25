@@ -1,4 +1,4 @@
-import type { AccountCategory, PayCycle } from "@/generated/prisma/client";
+import type { AccountCategory, PayCycle } from "@/db/schema";
 
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(" ");

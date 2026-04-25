@@ -1,4 +1,4 @@
-import type { BillCycle, PayCycle } from "@/generated/prisma/client";
+import type { BillCycle, PayCycle } from "@/db/schema";
 import type { DashboardAccount, DashboardBill } from "@/components/dashboard/dashboard-client/dashboard-client.types";
 
 /** Normalise a bill cycle to a monthly multiplier. */

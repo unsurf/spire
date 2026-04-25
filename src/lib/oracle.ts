@@ -1,4 +1,4 @@
-import type { PayCycle, SplitType } from "@/generated/prisma/client";
+import type { PayCycle, SplitType } from "@/db/schema";
 
 export type OracleHorizon = "6m" | "1y" | "2y" | "3y";
 
