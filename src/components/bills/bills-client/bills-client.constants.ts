@@ -1,4 +1,4 @@
-import type { BillCycle } from "@/generated/prisma/client";
+import type { BillCycle } from "@/db/schema";
 
 export const BILL_CYCLE_VALUES = [
   "DAILY",

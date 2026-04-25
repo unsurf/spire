@@ -65,8 +65,9 @@ Nginx, Traefik, and other proxies work the same way — proxy port 3000.
 # Install dependencies
 npm install
 
-# Set up the database
-npx prisma migrate dev
+# Generate and apply database migrations
+npx drizzle-kit generate
+npx drizzle-kit migrate
 
 # Start the dev server
 npm run dev
@@ -82,7 +83,7 @@ npx prettier --write .
 |---|---|
 | Framework | Next.js 16 (App Router) |
 | Language | TypeScript |
-| Database | PostgreSQL via Prisma |
+| Database | PostgreSQL via Drizzle ORM |
 | Auth | Auth.js (NextAuth v5) |
 | Styling | Tailwind CSS v4 |
 | Charts | Recharts |

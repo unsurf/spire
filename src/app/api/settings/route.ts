@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 const updateSettingsSchema = z.object({
@@ -19,17 +21,18 @@ export async function GET(): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      country: true,
-      currency: true,
-      createdAt: true,
-    },
-  });
+  const [user] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      country: users.country,
+      currency: users.currency,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
 
   return NextResponse.json(user);
 }
@@ -52,26 +55,22 @@ export async function PATCH(req: Request): Promise<NextResponse> {
 
   const { name, email, country, currency, currentPassword, newPassword } = parsed.data;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const updateData: {
-    name?: string;
-    email?: string;
-    country?: string;
-    currency?: string;
-    passwordHash?: string;
-  } = {};
+  const updateData: Partial<typeof users.$inferInsert> = {};
 
   if (name) updateData.name = name;
 
   if (email && email !== user.email) {
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existing) {
       return NextResponse.json({ error: "Email already in use" }, { status: 409 });
     }
@@ -83,26 +82,26 @@ export async function PATCH(req: Request): Promise<NextResponse> {
 
   if (newPassword) {
     if (!currentPassword) {
-      return NextResponse.json(
-        { error: "Current password required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Current password required" }, { status: 400 });
     }
     const valid = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!valid) {
-      return NextResponse.json(
-        { error: "Current password is incorrect" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
     }
     updateData.passwordHash = await bcrypt.hash(newPassword, 12);
   }
 
-  const updated = await prisma.user.update({
-    where: { id: session.user.id },
-    data: updateData,
-    select: { id: true, name: true, email: true, country: true, currency: true },
-  });
+  const [updated] = await db
+    .update(users)
+    .set(updateData)
+    .where(eq(users.id, session.user.id))
+    .returning({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      country: users.country,
+      currency: users.currency,
+    });
 
   return NextResponse.json(updated);
 }

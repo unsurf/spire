@@ -1,14 +1,14 @@
 import { z } from "zod";
-import { BillCycle, BillCategory, BillSubcategory } from "@/generated/prisma/client";
+import { billCycleEnum, billCategoryEnum, billSubcategoryEnum } from "@/db/schema";
 
 export const createBillSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   amount: z.number().positive().nullable().optional(),
   accountId: z.string().nullable().optional(),
-  cycle: z.nativeEnum(BillCycle),
+  cycle: z.enum(billCycleEnum.enumValues),
   startDate: z.string().refine((v) => !isNaN(Date.parse(v)), "Invalid date"),
-  category: z.nativeEnum(BillCategory).nullable().optional(),
-  subcategory: z.nativeEnum(BillSubcategory).nullable().optional(),
+  category: z.enum(billCategoryEnum.enumValues).nullable().optional(),
+  subcategory: z.enum(billSubcategoryEnum.enumValues).nullable().optional(),
 });
 
 export type CreateBillInput = z.infer<typeof createBillSchema>;

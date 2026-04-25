@@ -8,7 +8,6 @@ RUN npm ci
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npx prisma generate
 RUN npm run build
 
 FROM base AS runner
@@ -20,15 +19,10 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/src/generated ./src/generated
-COPY --from=builder /app/prisma.config.ts ./
+COPY --from=builder /app/drizzle ./drizzle
+COPY --from=deps /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 
-# Copy only the Prisma CLI and its engine from deps — avoids a full npm install in the runner
-COPY --from=deps /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
-COPY --from=deps /app/node_modules/@prisma ./node_modules/@prisma
-
+COPY migrate.mjs ./
 COPY entrypoint.sh ./
 RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 

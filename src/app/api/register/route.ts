@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { registerSchema } from "@/lib/schemas/user.schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +14,7 @@ export async function POST(req: Request) {
     }
     const { name, email, password } = parsed.data;
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const [existing] = await db.select().from(users).where(eq(users.email, email)).limit(1);
     if (existing) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
@@ -20,9 +23,10 @@ export async function POST(req: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({
-      data: { name, email, passwordHash },
-    });
+    const [user] = await db
+      .insert(users)
+      .values({ id: createId(), name, email, passwordHash })
+      .returning({ id: users.id });
 
     return NextResponse.json({ id: user.id }, { status: 201 });
   } catch {

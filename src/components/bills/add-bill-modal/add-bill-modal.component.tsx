@@ -10,7 +10,7 @@ import {
   SUBCATEGORIES_BY_CATEGORY,
 } from "@/lib/constants/bills.constants";
 import { billItemResponseSchema } from "@/lib/schemas/bill-response.schema";
-import type { BillCycle, BillCategory } from "@/generated/prisma/client";
+import type { BillCycle, BillCategory } from "@/db/schema";
 import type { AddBillModalProps } from "./add-bill-modal.types";
 
 const TODAY = new Date().toISOString().slice(0, 10);

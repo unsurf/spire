@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { incomes, accountSplits, accounts } from "@/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { createIncomeSchema } from "@/lib/schemas/income.schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function GET() {
   const session = await auth();
@@ -9,15 +12,15 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const incomes = await prisma.income.findMany({
-    where: { userId: session.user.id },
-    include: {
-      splits: { include: { account: true } },
+  const rows = await db.query.incomes.findMany({
+    where: eq(incomes.userId, session.user.id),
+    with: {
+      splits: { with: { account: true } },
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: asc(incomes.createdAt),
   });
 
-  return NextResponse.json(incomes);
+  return NextResponse.json(rows);
 }
 
 export async function POST(req: Request) {
@@ -37,25 +40,26 @@ export async function POST(req: Request) {
       );
     }
 
-    const parsedLastPaidAt = parsed.data.lastPaidAt
-      ? new Date(parsed.data.lastPaidAt)
-      : null;
-
-    const income = await prisma.income.create({
-      data: {
+    const [income] = await db
+      .insert(incomes)
+      .values({
+        id: createId(),
         userId: session.user.id,
         name: parsed.data.name,
         amount: parsed.data.amount.toString(),
         cycle: parsed.data.cycle,
-        lastPaidAt: parsedLastPaidAt,
-      },
-      include: { splits: { include: { account: true } } },
+        lastPaidAt: parsed.data.lastPaidAt ? new Date(parsed.data.lastPaidAt) : null,
+      })
+      .returning();
+
+    const incomeWithSplits = await db.query.incomes.findFirst({
+      where: eq(incomes.id, income.id),
+      with: { splits: { with: { account: true } } },
     });
 
-    return NextResponse.json(income, { status: 201 });
+    return NextResponse.json(incomeWithSplits, { status: 201 });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown income create error";
+    const message = error instanceof Error ? error.message : "Unknown income create error";
     return NextResponse.json(
       { error: "Failed to create income", details: message },
       { status: 500 }

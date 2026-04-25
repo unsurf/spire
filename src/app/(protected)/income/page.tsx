@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { accounts, users, incomes } from "@/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import IncomeClient from "@/components/income/income-client";
 import { ROUTES } from "@/lib/constants/routes.constants";
@@ -9,27 +11,27 @@ export default async function IncomePage() {
   const session = await auth();
   if (!session?.user?.id) redirect(ROUTES.SIGN_IN);
 
-  const [incomes, accounts, user] = await Promise.all([
-    prisma.income.findMany({
-      where: { userId: session.user.id },
-      include: { splits: { include: { account: true } } },
-      orderBy: { createdAt: "asc" },
+  const [incomeRows, accountRows, userRow] = await Promise.all([
+    db.query.incomes.findMany({
+      where: eq(incomes.userId, session.user.id),
+      with: { splits: { with: { account: true } } },
+      orderBy: asc(incomes.createdAt),
     }),
-    prisma.account.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "asc" },
+    db.query.accounts.findMany({
+      where: eq(accounts.userId, session.user.id),
+      orderBy: asc(accounts.createdAt),
     }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { currency: true },
+    db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: { currency: true },
     }),
   ]);
 
   return (
     <IncomeClient
-      incomes={serialiseIncomes(incomes)}
-      accounts={serialiseIncomeAccounts(accounts)}
-      currency={user?.currency ?? "USD"}
+      incomes={serialiseIncomes(incomeRows)}
+      accounts={serialiseIncomeAccounts(accountRows)}
+      currency={userRow?.currency ?? "USD"}
     />
   );
 }

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { incomes, accountSplits } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { updateSplitsSchema } from "@/lib/schemas/income.schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function PUT(
   req: Request,
@@ -26,8 +29,8 @@ export async function PUT(
 
   const { splits } = parsed.data;
 
-  const income = await prisma.income.findFirst({
-    where: { id, userId: session.user.id },
+  const income = await db.query.incomes.findFirst({
+    where: and(eq(incomes.id, id), eq(incomes.userId, session.user.id)),
   });
 
   if (!income) {
@@ -40,34 +43,31 @@ export async function PUT(
   const totalFixed = fixedSplits.reduce((sum, s) => sum + s.value, 0);
 
   if (totalPct > 100) {
-    return NextResponse.json(
-      { error: "Percentage splits exceed 100%" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Percentage splits exceed 100%" }, { status: 400 });
   }
 
   if (totalFixed > Number(income.amount)) {
-    return NextResponse.json(
-      { error: "Fixed splits exceed income amount" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Fixed splits exceed income amount" }, { status: 400 });
   }
 
-  await prisma.$transaction([
-    prisma.accountSplit.deleteMany({ where: { incomeId: id } }),
-    prisma.accountSplit.createMany({
-      data: splits.map((s) => ({
-        incomeId: id,
-        accountId: s.accountId,
-        type: s.type,
-        value: s.value,
-      })),
-    }),
-  ]);
+  await db.transaction(async (tx) => {
+    await tx.delete(accountSplits).where(eq(accountSplits.incomeId, id));
+    if (splits.length > 0) {
+      await tx.insert(accountSplits).values(
+        splits.map((s) => ({
+          id: createId(),
+          incomeId: id,
+          accountId: s.accountId,
+          type: s.type,
+          value: s.value.toString(),
+        })),
+      );
+    }
+  });
 
-  const updated = await prisma.accountSplit.findMany({
-    where: { incomeId: id },
-    include: { account: true },
+  const updated = await db.query.accountSplits.findMany({
+    where: eq(accountSplits.incomeId, id),
+    with: { account: true },
   });
 
   return NextResponse.json(updated);

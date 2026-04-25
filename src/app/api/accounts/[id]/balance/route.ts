@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { accounts, balanceEntries } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { createBalanceEntrySchema } from "@/lib/schemas/account.schema";
+import { createId } from "@paralleldrive/cuid2";
 
 export async function POST(
   req: Request,
@@ -24,21 +27,23 @@ export async function POST(
     );
   }
 
-  const account = await prisma.account.findFirst({
-    where: { id, userId: session.user.id },
+  const account = await db.query.accounts.findFirst({
+    where: and(eq(accounts.id, id), eq(accounts.userId, session.user.id)),
   });
 
   if (!account) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const entry = await prisma.balanceEntry.create({
-    data: {
+  const [entry] = await db
+    .insert(balanceEntries)
+    .values({
+      id: createId(),
       accountId: id,
-      balance: parsed.data.balance,
+      balance: parsed.data.balance.toString(),
       note: parsed.data.note ?? null,
-    },
-  });
+    })
+    .returning();
 
   return NextResponse.json(entry, { status: 201 });
 }

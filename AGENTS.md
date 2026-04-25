@@ -130,11 +130,11 @@ All data from: API responses, URL params, form inputs, `JSON.parse` — must pas
 ```ts
 // src/lib/schemas/account.schema.ts
 import { z } from "zod";
-import { AccountCategory } from "@/generated/prisma/client";
+import { accountCategoryEnum } from "@/db/schema";
 
 export const createAccountSchema = z.object({
   name: z.string().min(1).max(100),
-  category: z.nativeEnum(AccountCategory),
+  category: z.enum(accountCategoryEnum.enumValues),
 });
 
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
@@ -373,7 +373,7 @@ export async function POST(req: Request) {
   }
 
   // parsed.data is fully typed — no `as` needed
-  const account = await prisma.account.create({ data: { ...parsed.data, userId } });
+  const [account] = await db.insert(accounts).values({ ...parsed.data, userId }).returning();
   return Response.json(account);
 }
 ```
@@ -438,7 +438,7 @@ src/
 ### No logic in page files
 
 Page files (`app/**/page.tsx`) should only:
-1. Fetch data (Prisma queries)
+1. Fetch data (Drizzle queries via `db.query.*`)
 2. Handle auth redirects
 3. Pass serialized data to a `<FeatureNameClient>` component
 
@@ -448,8 +448,8 @@ Page files (`app/**/page.tsx`) should only:
 // WRONG
 const accounts = JSON.parse(JSON.stringify(rawAccounts));
 
-// RIGHT — src/lib/utils/prisma-serialise.ts
-export function serialiseAccounts(accounts: PrismaAccount[]): DashboardAccount[] { ... }
+// RIGHT — src/lib/utils/serialise.utils.ts
+export function serialiseAccounts(accounts: DrizzleAccount[]): DashboardAccount[] { ... }
 ```
 
 ---
@@ -488,3 +488,28 @@ These patterns were found in the codebase and must not be repeated.
 4. **No new magic strings.** If you add a route, add it to `ROUTES`. If you add a query param, add it to `QUERY_PARAMS`.
 5. **All new API routes need Zod validation.**
 6. **Run `tsc --noEmit` before pushing.** Zero type errors.
+
+## Commits
+
+Each commit must represent exactly one logical concern. Never batch unrelated changes into a single commit.
+
+**Scope examples:**
+
+| Scope | What belongs in it |
+|---|---|
+| `feat(drizzle)` | New schema tables, db instance, migration files |
+| `chore(deps)` | Package additions, removals, lockfile |
+| `refactor(schemas)` | Zod schema changes |
+| `refactor(lib)` | Changes to `src/lib/` utilities, constants |
+| `refactor(components)` | Component import or type updates |
+| `refactor(auth)` | Auth logic changes |
+| `refactor(api)` | API route rewrites |
+| `refactor(pages)` | Page data-fetching changes |
+| `chore(docker)` | Dockerfile, entrypoint, migration runner |
+
+**Rules:**
+
+- Use `feat` for net-new capability, `refactor` for reworking existing code without behaviour change, `fix` for bug fixes, `chore` for tooling/config/deps.
+- Subject line: imperative mood, ≤72 chars, no full stop.
+- If a change spans more than one scope above, split it into multiple commits — one per scope.
+- `tsc --noEmit` must pass after every individual commit, not just at the end.

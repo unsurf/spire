@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { accounts, trades } from "@/db/schema";
+import { eq, and, asc } from "drizzle-orm";
 
 type Params = { params: Promise<{ id: string; tradeId: string }> };
 
@@ -12,29 +14,36 @@ export async function DELETE(_req: Request, { params }: Params) {
 
   const { id, tradeId } = await params;
 
-  const trade = await prisma.trade.findFirst({
-    where: { id: tradeId, accountId: id, account: { userId: session.user.id } },
+  // Verify trade belongs to an account owned by this user
+  const trade = await db.query.trades.findFirst({
+    where: and(eq(trades.id, tradeId), eq(trades.accountId, id)),
+    with: { account: true },
   });
-  if (!trade) {
+  if (!trade || trade.account.userId !== session.user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await prisma.trade.delete({ where: { id: tradeId } });
+  await db.delete(trades).where(eq(trades.id, tradeId));
 
   // Recompute coinQuantity from remaining trades
-  const remaining = await prisma.trade.findMany({
-    where: { accountId: id },
-    orderBy: { tradedAt: "asc" },
-  });
+  const remaining = await db
+    .select()
+    .from(trades)
+    .where(eq(trades.accountId, id))
+    .orderBy(asc(trades.tradedAt));
+
   const newQty = Math.max(
     0,
     remaining.reduce((sum, t) => {
-      const q = parseFloat(t.quantity.toString());
+      const q = parseFloat(t.quantity);
       return t.type === "BUY" ? sum + q : sum - q;
     }, 0),
   );
 
-  await prisma.account.update({ where: { id }, data: { coinQuantity: newQty } });
+  await db
+    .update(accounts)
+    .set({ coinQuantity: newQty.toString() })
+    .where(eq(accounts.id, id));
 
-  return NextResponse.json({ coinQuantity: String(newQty) });
+  return NextResponse.json({ coinQuantity: newQty.toString() });
 }

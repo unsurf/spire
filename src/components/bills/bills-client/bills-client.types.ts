@@ -1,4 +1,4 @@
-import type { BillCycle, AccountCategory, BillCategory, BillSubcategory } from "@/generated/prisma/client";
+import type { BillCycle, AccountCategory, BillCategory, BillSubcategory } from "@/db/schema";
 
 export type BillItem = {
   id: string;

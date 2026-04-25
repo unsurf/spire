@@ -1,27 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { goals } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { updateGoalSchema } from "@/lib/schemas/goal.schema";
 
 type Params = { params: Promise<{ id: string }> };
-
-function serialiseGoal(g: {
-  id: string;
-  name: string;
-  targetAmount: { toString(): string };
-  accountId: string | null;
-  deadline: Date | null;
-  createdAt: Date;
-}) {
-  return {
-    id: g.id,
-    name: g.name,
-    targetAmount: g.targetAmount.toString(),
-    accountId: g.accountId,
-    deadline: g.deadline ? g.deadline.toISOString() : null,
-    createdAt: g.createdAt.toISOString(),
-  };
-}
 
 export async function PATCH(req: Request, { params }: Params) {
   const session = await auth();
@@ -31,7 +15,9 @@ export async function PATCH(req: Request, { params }: Params) {
 
   const { id } = await params;
 
-  const existing = await prisma.goal.findFirst({ where: { id, userId: session.user.id } });
+  const existing = await db.query.goals.findFirst({
+    where: and(eq(goals.id, id), eq(goals.userId, session.user.id)),
+  });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const parsed = updateGoalSchema.safeParse(await req.json());
@@ -41,17 +27,25 @@ export async function PATCH(req: Request, { params }: Params) {
 
   const { name, targetAmount, accountId, deadline } = parsed.data;
 
-  const updated = await prisma.goal.update({
-    where: { id },
-    data: {
+  const [updated] = await db
+    .update(goals)
+    .set({
       name,
-      targetAmount,
+      targetAmount: targetAmount.toString(),
       accountId: accountId ?? null,
       deadline: deadline ? new Date(deadline) : null,
-    },
-  });
+    })
+    .where(eq(goals.id, id))
+    .returning();
 
-  return NextResponse.json(serialiseGoal(updated));
+  return NextResponse.json({
+    id: updated.id,
+    name: updated.name,
+    targetAmount: updated.targetAmount,
+    accountId: updated.accountId,
+    deadline: updated.deadline ? updated.deadline.toISOString() : null,
+    createdAt: updated.createdAt.toISOString(),
+  });
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
@@ -62,10 +56,11 @@ export async function DELETE(_req: Request, { params }: Params) {
 
   const { id } = await params;
 
-  const existing = await prisma.goal.findFirst({ where: { id, userId: session.user.id } });
+  const existing = await db.query.goals.findFirst({
+    where: and(eq(goals.id, id), eq(goals.userId, session.user.id)),
+  });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.goal.delete({ where: { id } });
-
+  await db.delete(goals).where(eq(goals.id, id));
   return new NextResponse(null, { status: 204 });
 }

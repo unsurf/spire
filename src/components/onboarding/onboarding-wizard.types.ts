@@ -1,4 +1,4 @@
-import type { PayCycle, AccountCategory, SplitType } from "@/generated/prisma/client";
+import type { PayCycle, AccountCategory, SplitType } from "@/db/schema";
 
 export type IncomeInput = {
   name: string;

@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { db } from "@/db";
+import { accounts, users, bills } from "@/db/schema";
+import { eq, asc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { BillsOverviewClient } from "@/components/bills/bills-overview-client";
 import { ROUTES } from "@/lib/constants/routes.constants";
@@ -9,27 +11,27 @@ export default async function BillsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect(ROUTES.SIGN_IN);
 
-  const [bills, accounts, user] = await Promise.all([
-    prisma.bill.findMany({
-      where: { userId: session.user.id },
-      include: { account: { select: { name: true } } },
-      orderBy: { startDate: "asc" },
+  const [billRows, accountRows, userRow] = await Promise.all([
+    db.query.bills.findMany({
+      where: eq(bills.userId, session.user.id),
+      with: { account: { columns: { name: true } } },
+      orderBy: asc(bills.startDate),
     }),
-    prisma.account.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: "asc" },
+    db.query.accounts.findMany({
+      where: eq(accounts.userId, session.user.id),
+      orderBy: asc(accounts.createdAt),
     }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { currency: true },
+    db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: { currency: true },
     }),
   ]);
 
   return (
     <BillsOverviewClient
-      bills={serialiseBills(bills)}
-      accounts={serialiseIncomeAccounts(accounts)}
-      currency={user?.currency ?? "USD"}
+      bills={serialiseBills(billRows)}
+      accounts={serialiseIncomeAccounts(accountRows)}
+      currency={userRow?.currency ?? "USD"}
     />
   );
 }

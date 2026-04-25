@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { AccountCategory } from "@/generated/prisma/client";
+import { accountCategoryEnum } from "@/db/schema";
 
 export const createAccountSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  category: z.nativeEnum(AccountCategory),
+  category: z.enum(accountCategoryEnum.enumValues),
   annualGrowthRate: z.number().min(0).max(100).nullable().optional(),
   coinId: z.string().max(100).nullable().optional(),
   coinSymbol: z.string().max(20).nullable().optional(),

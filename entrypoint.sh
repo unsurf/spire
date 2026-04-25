@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "Running Prisma migrations..."
-npx prisma migrate deploy --schema=./prisma/schema.prisma
+echo "Running Drizzle migrations..."
+node migrate.mjs
 
 echo "Starting Spire..."
 exec node server.js
