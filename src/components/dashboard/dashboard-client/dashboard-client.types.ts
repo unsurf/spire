@@ -1,4 +1,4 @@
-import type { AccountCategory, BillCycle, BillCategory, BillSubcategory, PayCycle, SplitType } from "@/generated/prisma/client";
+import type { AccountCategory, BillCycle, BillCategory, BillSubcategory, PayCycle, SplitType } from "@/db/schema";
 
 export type DashboardBalanceEntry = {
   id: string;

@@ -1,4 +1,4 @@
-import type { AccountCategory, PayCycle, SplitType } from "@/generated/prisma/client";
+import type { AccountCategory, PayCycle, SplitType } from "@/db/schema";
 
 export type SplitEditorSplit = {
   id: string;

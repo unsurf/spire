@@ -4,7 +4,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { ArrowLeft, X } from "lucide-react";
 import { isAccountCategory } from "@/lib/utils";
-import type { AccountCategory } from "@/generated/prisma/client";
+import type { AccountCategory } from "@/db/schema";
 import type { BankAccountFormProps } from "./add-account-modal.types";
 
 const BANK_CATEGORIES: [AccountCategory, string][] = [

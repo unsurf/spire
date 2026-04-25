@@ -3,7 +3,7 @@ import type {
   AccountCategory,
   PayCycle,
   SplitType,
-} from "@/generated/prisma/client";
+} from "@/db/schema";
 
 export type AccountDetailBalanceEntry = {
   id: string;

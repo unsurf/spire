@@ -1,5 +1,5 @@
 import type { BillItem } from "../bills-client/bills-client.types";
-import type { BillCategory, BillSubcategory } from "@/generated/prisma/client";
+import type { BillCategory, BillSubcategory } from "@/db/schema";
 import { getBillDaysInMonth } from "../bills-client/bills-client.utils";
 
 export type CategorySummary = {

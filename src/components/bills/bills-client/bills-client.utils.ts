@@ -1,5 +1,5 @@
 import type { BillItem } from "./bills-client.types";
-import type { BillCycle } from "@/generated/prisma/client";
+import type { BillCycle } from "@/db/schema";
 
 export type BillOccurrence = { bill: BillItem; day: number };
 

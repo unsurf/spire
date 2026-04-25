@@ -13,7 +13,7 @@ import { PAY_CYCLE_LABELS, PAY_CYCLE_ENTRIES, ACCOUNT_CATEGORY_LABELS, isPayCycl
 import { formatCurrency } from "@/lib/currencies";
 import { formatNextPayDate, splitAmount } from "@/lib/payday";
 import { SplitEditor } from "../split-editor";
-import type { PayCycle } from "@/generated/prisma/client";
+import type { PayCycle } from "@/db/schema";
 import { incomeItemResponseSchema } from "@/lib/schemas/income-response.schema";
 import type {
   IncomeClientProps,
