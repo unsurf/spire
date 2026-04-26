@@ -41,45 +41,14 @@ Docker will automatically pull the correct variant for your platform.
 
 **Requirements:** Docker and Docker Compose.
 
-Create a `docker-compose.yml`:
-
-```yaml
-services:
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: spire
-      POSTGRES_USER: spire
-      POSTGRES_PASSWORD: spirepassword
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U spire -d spire"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  app:
-    image: unsurf/spire:latest
-    restart: unless-stopped
-    ports:
-      - "${APP_PORT:-3000}:${APP_PORT:-3000}"
-    environment:
-      DATABASE_URL: postgresql://spire:spirepassword@db:5432/spire
-      AUTH_SECRET: change-me-in-production
-      NEXTAUTH_URL: http://localhost:3000
-      AUTH_TRUST_HOST: "true"
-      PORT: ${APP_PORT:-3000}
-    depends_on:
-      db:
-        condition: service_healthy
-
-volumes:
-  postgres_data:
+```bash
+mkdir spire && cd spire
+curl -sL -o docker-compose.yml https://raw.githubusercontent.com/unsurf/spire/main/docker-compose.yml
+curl -sL -o .env.example https://raw.githubusercontent.com/unsurf/spire/main/.env.example
+cp .env.example .env
 ```
 
-Then:
+Edit `.env` — at minimum set `AUTH_SECRET` and `NEXTAUTH_URL`, then:
 
 ```bash
 docker compose up -d
