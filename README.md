@@ -88,7 +88,13 @@ Nginx, Traefik, and other proxies work the same way — proxy whichever port `AP
 
 ## Development
 
-The `docker-compose.yml` in the repo builds from source — use this for local development.
+To build and run from source, use the dev override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+Or run the Next.js dev server directly:
 
 ```bash
 # Clone and install
