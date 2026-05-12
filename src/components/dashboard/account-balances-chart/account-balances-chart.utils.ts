@@ -4,14 +4,21 @@ import type { AccountBalanceBar } from "./account-balances-chart.types";
 
 function getGroupKey(account: DashboardAccount): DashboardAccountGroupKey {
   if (account.category === "CHEQUE") return "accounts";
-  if (account.category === "SAVINGS" || account.category === "HIGH_GROWTH") return "savings";
+  if (
+    account.category === "SAVINGS" ||
+    account.category === "HIGH_GROWTH" ||
+    account.category === "EMERGENCY"
+  )
+    return "savings";
   if (
     account.category === "INVESTMENT" ||
     account.category === "CRYPTO" ||
     account.category === "ASSET"
   )
     return "investments";
-  if (account.category === "EMERGENCY") return "savings";
+  if (account.category === "CREDIT_CARD" || account.category === "OTHER_LIABILITY")
+    return "liabilities";
+  if (account.category === "LOAN") return "loan";
   return "loan";
 }
 

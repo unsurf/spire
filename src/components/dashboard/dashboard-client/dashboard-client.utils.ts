@@ -1,5 +1,6 @@
 import type { OracleHorizon, SplitInput as OracleSplitInput } from "@/lib/oracle";
 import { HORIZON_MONTHS, projectBalance } from "@/lib/oracle";
+import { isLiabilityCategory } from "@/lib/utils";
 import type {
   DashboardAccount,
   DashboardAccountGroup,
@@ -107,15 +108,20 @@ export function getAccountGroups(
     const groupKey =
       account.category === "CHEQUE"
         ? "accounts"
-        : account.category === "SAVINGS" || account.category === "HIGH_GROWTH"
+        : account.category === "SAVINGS" ||
+            account.category === "HIGH_GROWTH" ||
+            account.category === "EMERGENCY"
           ? "savings"
           : account.category === "INVESTMENT" ||
               account.category === "CRYPTO" ||
               account.category === "ASSET"
             ? "investments"
-            : account.category === "EMERGENCY"
-              ? "savings"
-              : "loan";
+            : account.category === "CREDIT_CARD" ||
+                account.category === "OTHER_LIABILITY"
+              ? "liabilities"
+              : account.category === "LOAN"
+                ? "loan"
+                : "loan";
 
     const target = groups.find((group) => group.key === groupKey);
     if (!target) continue;
@@ -212,6 +218,7 @@ export function buildNetWorthOraclePoints(
   const months = HORIZON_MONTHS[horizon];
   const byMonth = new Map<string, number>();
   for (const account of oracleAccounts) {
+    const sign = isLiabilityCategory(account.category) ? -1 : 1;
     const projected = projectBalance(
       getCurrentBalance(account),
       account.annualGrowthRate,
@@ -225,7 +232,7 @@ export function buildNetWorthOraclePoints(
       months,
     );
     for (const p of projected) {
-      byMonth.set(p.date, (byMonth.get(p.date) ?? 0) + p.balance);
+      byMonth.set(p.date, (byMonth.get(p.date) ?? 0) + sign * p.balance);
     }
   }
 
@@ -270,11 +277,12 @@ export function buildNetWorthData(accounts: DashboardAccount[]): NetWorthDataPoi
   const flat: FlatEntry[] = [];
 
   for (const account of accounts) {
+    const sign = isLiabilityCategory(account.category) ? -1 : 1;
     for (const entry of account.balanceEntries) {
       flat.push({
         recordedAt: entry.recordedAt,
         accountId: account.id,
-        balance: Number(entry.balance),
+        balance: sign * Number(entry.balance),
       });
     }
   }
