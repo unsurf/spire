@@ -12,6 +12,6 @@ export const BREAKDOWN_LABELS: Record<DashboardAccountGroupKey, string> = {
   accounts: "Accounts",
   savings: "Savings",
   investments: "Investments",
-  liabilities: "Emergency",
+  liabilities: "Liabilities",
   loan: "Loans",
 };

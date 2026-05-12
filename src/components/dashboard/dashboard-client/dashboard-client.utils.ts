@@ -114,7 +114,7 @@ export function getAccountGroups(
               account.category === "ASSET"
             ? "investments"
             : account.category === "EMERGENCY"
-              ? "liabilities"
+              ? "savings"
               : "loan";
 
     const target = groups.find((group) => group.key === groupKey);

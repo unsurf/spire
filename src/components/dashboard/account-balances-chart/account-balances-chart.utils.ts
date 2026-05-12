@@ -11,7 +11,7 @@ function getGroupKey(account: DashboardAccount): DashboardAccountGroupKey {
     account.category === "ASSET"
   )
     return "investments";
-  if (account.category === "EMERGENCY") return "liabilities";
+  if (account.category === "EMERGENCY") return "savings";
   return "loan";
 }
 
