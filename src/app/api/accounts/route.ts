@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { accounts, balanceEntries } from "@/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
 import { createAccountSchema } from "@/lib/schemas/account.schema";
+import { isLiabilityCategory } from "@/lib/utils";
 import { createId } from "@paralleldrive/cuid2";
 
 export async function GET() {
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
       coinId: parsed.data.coinId ?? null,
       coinSymbol: parsed.data.coinSymbol ?? null,
       coinQuantity: parsed.data.coinQuantity?.toString() ?? null,
-      oracleEnabled: true,
+      oracleEnabled: !isLiabilityCategory(parsed.data.category),
     })
     .returning();
 
