@@ -22,6 +22,7 @@ import {
   CATEGORY_COLORS,
   PAY_CYCLE_LABELS,
   isProjectableCategory,
+  isLiabilityCategory,
 } from "@/lib/utils";
 import { CHART_COLOR_BALANCE, CHART_GRADIENT } from "@/lib/constants/chart.constants";
 import { ROUTES } from "@/lib/constants/routes.constants";
@@ -53,6 +54,7 @@ export default function AccountDetailClientComponent({
 
   const isCrypto = account.category === "CRYPTO";
   const isProjectable = isProjectableCategory(account.category);
+  const isLiability = isLiabilityCategory(account.category);
 
   // Live price for crypto P&L
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -333,10 +335,10 @@ export default function AccountDetailClientComponent({
               </p>
               {delta !== null && (
                 <span
-                  className={`flex items-center gap-1 text-sm font-medium ${delta >= 0 ? "text-positive" : "text-error"}`}
+                  className={`flex items-center gap-1 text-sm font-medium ${(isLiability ? delta <= 0 : delta >= 0) ? "text-positive" : "text-error"}`}
                 >
-                  {delta >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                  {delta >= 0 ? "+" : ""}
+                  {(isLiability ? delta <= 0 : delta >= 0) ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                  {delta > 0 ? "+" : ""}
                   <MaskedValue amount={delta} currency={currency} />
                 </span>
               )}
@@ -648,8 +650,10 @@ export default function AccountDetailClientComponent({
                   const prev = arr[i + 1];
                   const current = Number(entry.balance);
                   const delta = prev !== undefined ? current - Number(prev.balance) : null;
-                  const up = delta !== null && delta > 0;
-                  const down = delta !== null && delta < 0;
+                  const increased = delta !== null && delta > 0;
+                  const decreased = delta !== null && delta < 0;
+                  const up = isLiability ? decreased : increased;
+                  const down = isLiability ? increased : decreased;
                   return (
                     <div key={entry.id} className="flex items-center justify-between px-5 py-3.5">
                       <div className="flex min-w-0 items-center gap-3">

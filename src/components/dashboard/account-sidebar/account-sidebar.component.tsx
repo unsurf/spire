@@ -11,6 +11,7 @@ import {
   getCryptoTotalGrowth,
   getSparklineData,
 } from "../dashboard-client/dashboard-client.utils";
+import { isLiabilityCategory } from "@/lib/utils";
 import type { AccountSidebarProps } from "./account-sidebar.types";
 
 const FILTER_TABS = [
@@ -94,9 +95,10 @@ export function AccountSidebar({
                       account.category === "CRYPTO"
                         ? getCryptoTotalGrowth(account, liveCryptoPrices)
                         : getGrowthPercent(account);
+                    const isLiability = isLiabilityCategory(account.category);
+                    const isGood = growth !== null && (isLiability ? growth <= 0 : growth >= 0);
                     const sparkData = getSparklineData(account);
-                    const sparkColor =
-                      growth !== null && growth >= 0 ? CHART_COLOR_BALANCE : "var(--error)";
+                    const sparkColor = isGood ? CHART_COLOR_BALANCE : "var(--error)";
 
                     return (
                       <button
@@ -114,10 +116,10 @@ export function AccountSidebar({
                           {growth !== null && (
                             <span
                               className={`ml-2 shrink-0 text-[10px] font-medium ${
-                                growth >= 0 ? "text-positive" : "text-error"
+                                isGood ? "text-positive" : "text-error"
                               }`}
                             >
-                              {growth >= 0 ? "+" : ""}
+                              {growth > 0 ? "+" : ""}
                               {growth.toFixed(1)}%
                             </span>
                           )}
