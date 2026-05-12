@@ -14,6 +14,14 @@ export function getCurrentBalance(account: DashboardAccount): number {
   return Number(account.balanceEntries[account.balanceEntries.length - 1].balance);
 }
 
+export function getSignedBalance(
+  account: DashboardAccount,
+  liveCryptoPrices?: Map<string, number>,
+): number {
+  const sign = isLiabilityCategory(account.category) ? -1 : 1;
+  return sign * getLiveBalance(account, liveCryptoPrices);
+}
+
 export function getLiveBalance(
   account: DashboardAccount,
   liveCryptoPrices?: Map<string, number>,
