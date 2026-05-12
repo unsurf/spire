@@ -31,6 +31,9 @@ export const accountCategoryEnum = pgEnum("AccountCategory", [
   "CRYPTO",
   "ASSET",
   "OTHER",
+  "LOAN",
+  "CREDIT_CARD",
+  "OTHER_LIABILITY",
 ]);
 
 export const splitTypeEnum = pgEnum("SplitType", ["PERCENTAGE", "FIXED"]);
