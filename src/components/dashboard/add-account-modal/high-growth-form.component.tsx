@@ -70,6 +70,7 @@ export function HighGrowthForm({ onBack, onClose, onAdded }: HighGrowthFormProps
       name: accountName,
       category: rawCategory,
       oracleEnabled: true,
+      excludeFromNetWorth: false,
       annualGrowthRate,
       coinId: null,
       coinSymbol: null,

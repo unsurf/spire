@@ -65,6 +65,7 @@ export function LiabilityForm({ onBack, onClose, onAdded }: LiabilityFormProps) 
       name: accountName,
       category: rawCategory,
       oracleEnabled: false,
+      excludeFromNetWorth: false,
       annualGrowthRate: null,
       coinId: null,
       coinSymbol: null,

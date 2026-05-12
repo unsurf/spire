@@ -217,6 +217,7 @@ export function CryptoForm({ onBack, onClose, onAdded, currency }: CryptoFormPro
       name,
       category: rawCategory,
       oracleEnabled: false,
+      excludeFromNetWorth: false,
       annualGrowthRate,
       coinId: coinId ?? null,
       coinSymbol,

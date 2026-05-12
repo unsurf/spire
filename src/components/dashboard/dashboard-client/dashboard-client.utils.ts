@@ -18,6 +18,7 @@ export function getSignedBalance(
   account: DashboardAccount,
   liveCryptoPrices?: Map<string, number>,
 ): number {
+  if (account.excludeFromNetWorth) return 0;
   const sign = isLiabilityCategory(account.category) ? -1 : 1;
   return sign * getLiveBalance(account, liveCryptoPrices);
 }
@@ -220,7 +221,7 @@ export function buildNetWorthOraclePoints(
   netWorthData: NetWorthDataPoint[],
 ): NetWorthDataPoint[] {
   if (!oracleOn || accounts.length === 0 || netWorthData.length === 0) return [];
-  const oracleAccounts = accounts.filter((a) => a.oracleEnabled);
+  const oracleAccounts = accounts.filter((a) => a.oracleEnabled && !a.excludeFromNetWorth);
   if (oracleAccounts.length === 0) return [];
 
   const months = HORIZON_MONTHS[horizon];
@@ -285,6 +286,7 @@ export function buildNetWorthData(accounts: DashboardAccount[]): NetWorthDataPoi
   const flat: FlatEntry[] = [];
 
   for (const account of accounts) {
+    if (account.excludeFromNetWorth) continue;
     const sign = isLiabilityCategory(account.category) ? -1 : 1;
     for (const entry of account.balanceEntries) {
       flat.push({
