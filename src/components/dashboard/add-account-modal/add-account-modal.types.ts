@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { DashboardAccount } from "@/components/dashboard/dashboard-client/dashboard-client.types";
 
-export type ModalStep = "picker" | "bank-account" | "high-growth" | "crypto";
+export type ModalStep = "picker" | "bank-account" | "high-growth" | "crypto" | "liability";
 
 export type AccountTypeTile = {
   id: string;
@@ -45,4 +45,10 @@ export type CryptoFormProps = {
   onClose: () => void;
   onAdded: (account: DashboardAccount) => void;
   currency: string;
+};
+
+export type LiabilityFormProps = {
+  onBack: () => void;
+  onClose: () => void;
+  onAdded: (account: DashboardAccount) => void;
 };
