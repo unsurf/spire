@@ -63,6 +63,7 @@ export async function PATCH(
   const updateData: Partial<typeof accounts.$inferInsert> = {};
   if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
   if (parsed.data.oracleEnabled !== undefined) updateData.oracleEnabled = parsed.data.oracleEnabled;
+  if (parsed.data.excludeFromNetWorth !== undefined) updateData.excludeFromNetWorth = parsed.data.excludeFromNetWorth;
   if (parsed.data.annualGrowthRate !== undefined) updateData.annualGrowthRate = parsed.data.annualGrowthRate;
   if (parsed.data.coinQuantity !== undefined) updateData.coinQuantity = parsed.data.coinQuantity?.toString() ?? null;
   if (parsed.data.coinSymbol !== undefined) updateData.coinSymbol = parsed.data.coinSymbol;
