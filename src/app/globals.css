@@ -84,3 +84,9 @@ body {
   box-sizing: border-box;
 }
 
+.recharts-wrapper,
+.recharts-wrapper svg,
+.recharts-surface {
+  outline: none;
+}
+
