@@ -13,6 +13,7 @@ export const createAccountSchema = z.object({
 export const updateAccountSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   oracleEnabled: z.boolean().optional(),
+  excludeFromNetWorth: z.boolean().optional(),
   annualGrowthRate: z.number().min(0).max(100).nullable().optional(),
   coinQuantity: z.number().positive().nullable().optional(),
   coinSymbol: z.string().max(20).nullable().optional(),

@@ -9,6 +9,7 @@ import {
   Car,
   Package,
   Minus,
+  Wallet,
 } from "lucide-react";
 import type { AccountTypeTile } from "./add-account-modal.types";
 
@@ -18,9 +19,10 @@ export const ACCOUNT_TYPE_TILES: AccountTypeTile[] = [
   { id: "stock", label: "Stock", icon: TrendingUp, step: null },
   { id: "crypto", label: "Crypto", icon: Bitcoin, step: "crypto" },
   { id: "retirement", label: "Retirement Fund", icon: Shield, step: null },
-  { id: "loan", label: "Loan", icon: CreditCard, step: null },
+  { id: "loan", label: "Loan", icon: Wallet, step: "liability" },
+  { id: "credit-card", label: "Credit Card", icon: CreditCard, step: "liability" },
   { id: "property", label: "Property", icon: Home, step: null },
   { id: "vehicle", label: "Vehicle", icon: Car, step: null },
   { id: "other-asset", label: "Other Asset", icon: Package, step: null },
-  { id: "other-liability", label: "Other Liability", icon: Minus, step: null },
+  { id: "other-liability", label: "Other Liability", icon: Minus, step: "liability" },
 ];

@@ -84,3 +84,14 @@ body {
   box-sizing: border-box;
 }
 
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-within,
+.recharts-wrapper *:focus,
+svg.recharts-surface,
+svg.recharts-surface:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+

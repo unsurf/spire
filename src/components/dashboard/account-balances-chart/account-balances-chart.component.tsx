@@ -17,8 +17,8 @@ import type { AccountBalancesChartProps } from "./account-balances-chart.types";
 const BAR_HEIGHT = 28;
 const BAR_GAP = 8;
 
-export function AccountBalancesChart({ accounts, currency }: AccountBalancesChartProps) {
-  const bars = buildAccountBalanceBars(accounts);
+export function AccountBalancesChart({ accounts, currency, liveCryptoPrices }: AccountBalancesChartProps) {
+  const bars = buildAccountBalanceBars(accounts, liveCryptoPrices);
 
   if (bars.length === 0) return null;
 
@@ -34,6 +34,7 @@ export function AccountBalancesChart({ accounts, currency }: AccountBalancesChar
             data={bars}
             margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
             barCategoryGap={BAR_GAP}
+            tabIndex={-1}
           >
             <XAxis type="number" hide />
             <YAxis

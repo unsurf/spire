@@ -5,6 +5,7 @@ import { AccountTypePicker } from "./account-type-picker.component";
 import { BankAccountForm } from "./bank-account-form.component";
 import { HighGrowthForm } from "./high-growth-form.component";
 import { CryptoForm } from "./crypto-form.component";
+import { LiabilityForm } from "./liability-form.component";
 import type { AddAccountModalProps, ModalStep } from "./add-account-modal.types";
 
 export function AddAccountModal({ onClose, onAdded, currency }: AddAccountModalProps) {
@@ -26,6 +27,9 @@ export function AddAccountModal({ onClose, onAdded, currency }: AddAccountModalP
           onAdded={onAdded}
           currency={currency}
         />
+      )}
+      {step === "liability" && (
+        <LiabilityForm onBack={() => setStep("picker")} onClose={onClose} onAdded={onAdded} />
       )}
     </div>
   );

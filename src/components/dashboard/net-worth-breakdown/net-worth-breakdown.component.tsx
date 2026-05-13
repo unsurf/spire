@@ -6,8 +6,8 @@ import { buildBreakdownSegments, isBreakdownSegment } from "./net-worth-breakdow
 import { BREAKDOWN_COLORS } from "./net-worth-breakdown.constants";
 import type { NetWorthBreakdownProps } from "./net-worth-breakdown.types";
 
-export function NetWorthBreakdown({ accounts, currency }: NetWorthBreakdownProps) {
-  const segments = buildBreakdownSegments(accounts);
+export function NetWorthBreakdown({ accounts, currency, liveCryptoPrices }: NetWorthBreakdownProps) {
+  const segments = buildBreakdownSegments(accounts, liveCryptoPrices);
 
   if (segments.length === 0) return null;
 
@@ -19,7 +19,7 @@ export function NetWorthBreakdown({ accounts, currency }: NetWorthBreakdownProps
       <div className="flex items-center gap-6">
         <div className="relative h-40 w-40 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart tabIndex={-1}>
               {/* Visible thin ring */}
               <Pie
                 data={segments}

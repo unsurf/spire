@@ -31,6 +31,9 @@ export const accountCategoryEnum = pgEnum("AccountCategory", [
   "CRYPTO",
   "ASSET",
   "OTHER",
+  "LOAN",
+  "CREDIT_CARD",
+  "OTHER_LIABILITY",
 ]);
 
 export const splitTypeEnum = pgEnum("SplitType", ["PERCENTAGE", "FIXED"]);
@@ -116,6 +119,7 @@ export const accounts = pgTable("Account", {
   name: text("name").notNull(),
   category: accountCategoryEnum("category").notNull(),
   oracleEnabled: boolean("oracleEnabled").notNull().default(true),
+  excludeFromNetWorth: boolean("excludeFromNetWorth").notNull().default(false),
   annualGrowthRate: real("annualGrowthRate"),
   coinId: text("coinId"),
   coinSymbol: text("coinSymbol"),

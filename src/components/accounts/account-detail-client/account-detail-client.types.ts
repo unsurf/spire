@@ -33,6 +33,7 @@ export type AccountDetailAccount = {
   name: string;
   category: AccountCategory;
   oracleEnabled: boolean;
+  excludeFromNetWorth: boolean;
   annualGrowthRate: number | null;
   coinId: string | null;
   coinSymbol: string | null;

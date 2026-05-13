@@ -64,6 +64,7 @@ export function BankAccountForm({ onBack, onClose, onAdded }: BankAccountFormPro
       name: accountName,
       category: rawCategory,
       oracleEnabled: false,
+      excludeFromNetWorth: false,
       annualGrowthRate: null,
       coinId: null,
       coinSymbol: null,

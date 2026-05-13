@@ -11,6 +11,7 @@ export type OverviewViewProps = {
   accounts: DashboardAccount[];
   bills: DashboardBill[];
   goals: DashboardGoal[];
+  liveCryptoPrices: Map<string, number>;
   currency: string;
   oracleOn: boolean;
   horizon: OracleHorizon;

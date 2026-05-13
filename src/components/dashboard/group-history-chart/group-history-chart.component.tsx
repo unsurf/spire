@@ -30,7 +30,7 @@ export function GroupHistoryChart({ accounts, currency }: GroupHistoryChartProps
       <p className="text-muted mb-4 px-4 text-xs uppercase tracking-wide">Balance by Group</p>
       <div style={{ height: 192 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }} tabIndex={-1}>
             <defs>
               {activeSeries.map((s) => (
                 <linearGradient key={s.gradientId} id={s.gradientId} x1="0" y1="0" x2="0" y2="1">

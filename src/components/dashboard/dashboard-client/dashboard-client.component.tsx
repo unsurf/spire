@@ -28,6 +28,7 @@ import {
   buildNetWorthChartData,
   getVisibleGroups,
   buildCryptoChartData,
+  getSignedBalance,
 } from "./dashboard-client.utils";
 import { isProjectableCategory } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants/routes.constants";
@@ -155,7 +156,7 @@ export default function DashboardClientComponent({
   const effectiveChartData =
     isCryptoAccount && cryptoChartData.length > 0 ? cryptoChartData : fallbackChartData;
 
-  const netWorth = accounts.reduce((sum, a) => sum + getLiveBalance(a, liveCryptoPrices), 0);
+  const netWorth = accounts.reduce((sum, a) => sum + getSignedBalance(a, liveCryptoPrices), 0);
   const greeting = getGreeting(new Date().getHours());
   const accountGroups = getAccountGroups(accounts, liveCryptoPrices);
 
@@ -309,6 +310,7 @@ export default function DashboardClientComponent({
             bills={bills}
             goals={goals}
             currency={currency}
+            liveCryptoPrices={liveCryptoPrices}
             oracleOn={oracleOn}
             horizon={horizon}
             onHorizonChange={setHorizon}

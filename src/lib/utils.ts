@@ -13,6 +13,9 @@ export const ACCOUNT_CATEGORY_LABELS: Record<AccountCategory, string> = {
   CRYPTO: "Crypto",
   ASSET: "Asset",
   OTHER: "Other",
+  LOAN: "Loan",
+  CREDIT_CARD: "Credit Card",
+  OTHER_LIABILITY: "Other Liability",
 };
 
 export const ACCOUNT_CATEGORY_ENTRIES: [AccountCategory, string][] = Object.entries(ACCOUNT_CATEGORY_LABELS) as [AccountCategory, string][];
@@ -72,4 +75,17 @@ export const CATEGORY_COLORS: Record<AccountCategory, string> = {
   CRYPTO: "bg-accent-soft text-accent",
   ASSET: "bg-positive-soft text-positive",
   OTHER: "bg-surface-raised text-muted",
+  LOAN: "bg-error-soft text-error",
+  CREDIT_CARD: "bg-error-soft text-error",
+  OTHER_LIABILITY: "bg-error-soft text-error",
 };
+
+export const LIABILITY_CATEGORIES: AccountCategory[] = [
+  "LOAN",
+  "CREDIT_CARD",
+  "OTHER_LIABILITY",
+];
+
+export function isLiabilityCategory(category: AccountCategory): boolean {
+  return LIABILITY_CATEGORIES.includes(category);
+}

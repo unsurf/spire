@@ -22,6 +22,7 @@ import {
   CATEGORY_COLORS,
   PAY_CYCLE_LABELS,
   isProjectableCategory,
+  isLiabilityCategory,
 } from "@/lib/utils";
 import { CHART_COLOR_BALANCE, CHART_GRADIENT } from "@/lib/constants/chart.constants";
 import { ROUTES } from "@/lib/constants/routes.constants";
@@ -53,6 +54,7 @@ export default function AccountDetailClientComponent({
 
   const isCrypto = account.category === "CRYPTO";
   const isProjectable = isProjectableCategory(account.category);
+  const isLiability = isLiabilityCategory(account.category);
 
   // Live price for crypto P&L
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -104,6 +106,7 @@ export default function AccountDetailClientComponent({
   const [balanceLoading, setBalanceLoading] = useState(false);
 
   const [oracleOn, setOracleOn] = useState(account.oracleEnabled);
+  const [excludeFromNetWorth, setExcludeFromNetWorth] = useState(account.excludeFromNetWorth);
   const [growthRate, setGrowthRate] = useState(
     account.annualGrowthRate !== null ? String(account.annualGrowthRate) : "",
   );
@@ -216,6 +219,7 @@ export default function AccountDetailClientComponent({
       body: JSON.stringify({
         name: nameDraft,
         oracleEnabled: oracleOn,
+        excludeFromNetWorth,
         annualGrowthRate: growthRate !== "" ? Number(growthRate) : null,
       }),
     });
@@ -225,6 +229,7 @@ export default function AccountDetailClientComponent({
         ...prev,
         name: updated.name,
         oracleEnabled: updated.oracleEnabled,
+        excludeFromNetWorth: updated.excludeFromNetWorth,
         annualGrowthRate: updated.annualGrowthRate,
       }));
       setEditingName(false);
@@ -330,10 +335,10 @@ export default function AccountDetailClientComponent({
               </p>
               {delta !== null && (
                 <span
-                  className={`flex items-center gap-1 text-sm font-medium ${delta >= 0 ? "text-positive" : "text-error"}`}
+                  className={`flex items-center gap-1 text-sm font-medium ${(isLiability ? delta <= 0 : delta >= 0) ? "text-positive" : "text-error"}`}
                 >
-                  {delta >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                  {delta >= 0 ? "+" : ""}
+                  {(isLiability ? delta <= 0 : delta >= 0) ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                  {delta > 0 ? "+" : ""}
                   <MaskedValue amount={delta} currency={currency} />
                 </span>
               )}
@@ -645,8 +650,10 @@ export default function AccountDetailClientComponent({
                   const prev = arr[i + 1];
                   const current = Number(entry.balance);
                   const delta = prev !== undefined ? current - Number(prev.balance) : null;
-                  const up = delta !== null && delta > 0;
-                  const down = delta !== null && delta < 0;
+                  const increased = delta !== null && delta > 0;
+                  const decreased = delta !== null && delta < 0;
+                  const up = isLiability ? decreased : increased;
+                  const down = isLiability ? increased : decreased;
                   return (
                     <div key={entry.id} className="flex items-center justify-between px-5 py-3.5">
                       <div className="flex min-w-0 items-center gap-3">
@@ -742,6 +749,20 @@ export default function AccountDetailClientComponent({
             <div className="bg-surface-raised border-edge rounded-xl border p-6">
               <h2 className="text-muted mb-4 text-sm font-semibold">Account Settings</h2>
               <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-on-surface text-sm font-medium">Exclude from net worth</p>
+                    <p className="text-muted mt-0.5 text-xs">Balance won&apos;t affect your net worth total</p>
+                  </div>
+                  <button
+                    onClick={() => setExcludeFromNetWorth((v) => !v)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${excludeFromNetWorth ? "bg-accent" : "bg-edge-strong"}`}
+                  >
+                    <span
+                      className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${excludeFromNetWorth ? "translate-x-4.5" : "translate-x-0.5"}`}
+                    />
+                  </button>
+                </div>
                 {isProjectable && (
                   <>
                     <div className="flex items-center justify-between">

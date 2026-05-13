@@ -47,6 +47,7 @@ type PrismaAccountBase = {
   name: string;
   category: string;
   oracleEnabled: boolean;
+  excludeFromNetWorth: boolean;
   annualGrowthRate: number | null;
   coinId: string | null;
   coinSymbol: string | null;
@@ -90,6 +91,7 @@ export function serialiseDashboardAccounts(accounts: PrismaAccountBase[]): Dashb
     name: a.name,
     category: a.category as DashboardAccount["category"],
     oracleEnabled: a.oracleEnabled,
+    excludeFromNetWorth: a.excludeFromNetWorth,
     annualGrowthRate: a.annualGrowthRate,
     coinId: a.coinId,
     coinSymbol: a.coinSymbol,
@@ -127,6 +129,7 @@ export function serialiseAccountDetail(account: PrismaAccount): AccountDetailAcc
     name: account.name,
     category: account.category as AccountDetailAccount["category"],
     oracleEnabled: account.oracleEnabled,
+    excludeFromNetWorth: account.excludeFromNetWorth,
     annualGrowthRate: account.annualGrowthRate,
     coinId: account.coinId,
     coinSymbol: account.coinSymbol,
