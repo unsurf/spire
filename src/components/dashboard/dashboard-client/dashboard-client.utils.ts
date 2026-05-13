@@ -70,12 +70,18 @@ export function getCryptoTotalGrowth(
   if (account.category !== "CRYPTO" || !account.coinId || !account.coinQuantity) return null;
   const livePrice = liveCryptoPrices.get(account.coinId);
   if (livePrice === undefined) return null;
-  const purchaseEntry = account.balanceEntries[0];
-  if (!purchaseEntry) return null;
-  const purchaseValue = Number(purchaseEntry.balance);
-  if (purchaseValue === 0) return null;
+  if (account.trades.length === 0) return null;
+
+  // Net cost basis: sum of BUY spend minus SELL proceeds across all trades
+  let costBasis = 0;
+  for (const trade of account.trades) {
+    const spent = parseFloat(trade.quantity) * parseFloat(trade.price);
+    costBasis += trade.type === "BUY" ? spent : -spent;
+  }
+  if (costBasis <= 0) return null;
+
   const liveValue = parseFloat(account.coinQuantity) * livePrice;
-  return ((liveValue - purchaseValue) / purchaseValue) * 100;
+  return ((liveValue - costBasis) / costBasis) * 100;
 }
 
 export function getGrowthPercent(account: DashboardAccount): number | null {
