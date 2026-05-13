@@ -34,6 +34,7 @@ export function AccountBalancesChart({ accounts, currency, liveCryptoPrices }: A
             data={bars}
             margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
             barCategoryGap={BAR_GAP}
+            tabIndex={-1}
           >
             <XAxis type="number" hide />
             <YAxis

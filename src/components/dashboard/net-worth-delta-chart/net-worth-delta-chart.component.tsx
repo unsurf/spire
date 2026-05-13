@@ -24,7 +24,7 @@ export function NetWorthDeltaChart({ netWorthData, currency }: NetWorthDeltaChar
       <p className="text-muted mb-4 text-xs uppercase tracking-wide">Monthly Change</p>
       <div style={{ height: 140 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }} barCategoryGap="30%">
+          <BarChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }} barCategoryGap="30%" tabIndex={-1}>
             <XAxis
               dataKey="month"
               tick={{ fontSize: 10, fill: "var(--muted)" }}

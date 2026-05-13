@@ -19,7 +19,7 @@ export function NetWorthBreakdown({ accounts, currency, liveCryptoPrices }: NetW
       <div className="flex items-center gap-6">
         <div className="relative h-40 w-40 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart tabIndex={-1}>
               {/* Visible thin ring */}
               <Pie
                 data={segments}
