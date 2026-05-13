@@ -22,6 +22,7 @@ export function OverviewView({
   bills,
   goals,
   currency,
+  liveCryptoPrices,
   oracleOn,
   horizon,
   onHorizonChange,
@@ -104,7 +105,7 @@ export function OverviewView({
 
       {accounts.length > 0 && (
         <div className="mb-6 flex flex-col gap-4">
-          <NetWorthBreakdown accounts={accounts} currency={currency} />
+          <NetWorthBreakdown accounts={accounts} currency={currency} liveCryptoPrices={liveCryptoPrices} />
           <NetWorthDeltaChart netWorthData={netWorthData} currency={currency} />
           <MonthlySnapshot accounts={accounts} bills={bills} currency={currency} />
           <GoalProgress
@@ -115,7 +116,7 @@ export function OverviewView({
             onAddGoal={onAddGoal}
             onDeleteGoal={onDeleteGoal}
           />
-          <AccountBalancesChart accounts={accounts} currency={currency} />
+          <AccountBalancesChart accounts={accounts} currency={currency} liveCryptoPrices={liveCryptoPrices} />
         </div>
       )}
 

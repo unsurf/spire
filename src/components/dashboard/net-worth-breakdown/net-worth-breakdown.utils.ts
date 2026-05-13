@@ -2,7 +2,7 @@ import type {
   DashboardAccount,
   DashboardAccountGroupKey,
 } from "../dashboard-client/dashboard-client.types";
-import { getCurrentBalance } from "../dashboard-client/dashboard-client.utils";
+import { getLiveBalance } from "../dashboard-client/dashboard-client.utils";
 import { BREAKDOWN_LABELS } from "./net-worth-breakdown.constants";
 import type { BreakdownSegment } from "./net-worth-breakdown.types";
 
@@ -26,7 +26,7 @@ function categoriseAccount(account: DashboardAccount): DashboardAccountGroupKey 
   return "loan";
 }
 
-export function buildBreakdownSegments(accounts: DashboardAccount[]): BreakdownSegment[] {
+export function buildBreakdownSegments(accounts: DashboardAccount[], liveCryptoPrices: Map<string, number>): BreakdownSegment[] {
   const totals: Record<DashboardAccountGroupKey, number> = {
     accounts: 0,
     savings: 0,
@@ -36,7 +36,7 @@ export function buildBreakdownSegments(accounts: DashboardAccount[]): BreakdownS
   };
 
   for (const account of accounts) {
-    totals[categoriseAccount(account)] += getCurrentBalance(account);
+    totals[categoriseAccount(account)] += getLiveBalance(account, liveCryptoPrices);
   }
 
   const total = (Object.values(totals) as number[]).reduce((sum, v) => sum + Math.abs(v), 0);

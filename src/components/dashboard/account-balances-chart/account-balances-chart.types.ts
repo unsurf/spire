@@ -3,6 +3,7 @@ import type { DashboardAccount, DashboardAccountGroupKey } from "../dashboard-cl
 export type AccountBalancesChartProps = {
   accounts: DashboardAccount[];
   currency: string;
+  liveCryptoPrices: Map<string, number>;
 };
 
 export type AccountBalanceBar = {

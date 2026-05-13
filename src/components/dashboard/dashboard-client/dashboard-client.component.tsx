@@ -310,6 +310,7 @@ export default function DashboardClientComponent({
             bills={bills}
             goals={goals}
             currency={currency}
+            liveCryptoPrices={liveCryptoPrices}
             oracleOn={oracleOn}
             horizon={horizon}
             onHorizonChange={setHorizon}

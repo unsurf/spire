@@ -1,5 +1,5 @@
 import type { DashboardAccount, DashboardAccountGroupKey } from "../dashboard-client/dashboard-client.types";
-import { getCurrentBalance } from "../dashboard-client/dashboard-client.utils";
+import { getLiveBalance } from "../dashboard-client/dashboard-client.utils";
 import type { AccountBalanceBar } from "./account-balances-chart.types";
 
 function getGroupKey(account: DashboardAccount): DashboardAccountGroupKey {
@@ -22,12 +22,12 @@ function getGroupKey(account: DashboardAccount): DashboardAccountGroupKey {
   return "loan";
 }
 
-export function buildAccountBalanceBars(accounts: DashboardAccount[]): AccountBalanceBar[] {
+export function buildAccountBalanceBars(accounts: DashboardAccount[], liveCryptoPrices: Map<string, number>): AccountBalanceBar[] {
   return accounts
     .map((account) => ({
       id: account.id,
       name: account.name,
-      value: Math.abs(getCurrentBalance(account)),
+      value: Math.abs(getLiveBalance(account, liveCryptoPrices)),
       groupKey: getGroupKey(account),
     }))
     .filter((bar) => bar.value > 0)

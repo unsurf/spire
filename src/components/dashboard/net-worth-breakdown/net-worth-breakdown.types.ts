@@ -6,6 +6,7 @@ import type {
 export type NetWorthBreakdownProps = {
   accounts: DashboardAccount[];
   currency: string;
+  liveCryptoPrices: Map<string, number>;
 };
 
 export type BreakdownSegment = {
