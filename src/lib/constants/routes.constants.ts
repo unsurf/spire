@@ -7,6 +7,7 @@ export const ROUTES = {
   BILLS: "/bills",
   BILLS_CALENDAR: "/bills/calendar",
   SETTINGS: "/settings",
+  INTEGRATIONS: "/settings/integrations",
   SIGN_IN: "/signin",
   REGISTER: "/register",
   ONBOARDING: "/onboarding",

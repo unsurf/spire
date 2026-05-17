@@ -22,5 +22,10 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Receipt,
     children: [{ href: ROUTES.BILLS_CALENDAR, label: "Bills Calendar" }],
   },
-  { href: ROUTES.SETTINGS, label: "Settings", icon: Settings },
+  {
+    href: ROUTES.SETTINGS,
+    label: "Settings",
+    icon: Settings,
+    children: [{ href: ROUTES.INTEGRATIONS, label: "Integrations" }],
+  },
 ];
