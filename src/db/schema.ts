@@ -94,7 +94,32 @@ export const users = pgTable("User", {
   country: text("country"),
   currency: text("currency"),
   onboardingComplete: boolean("onboardingComplete").notNull().default(false),
+  basiqUserId: text("basiqUserId"),
   createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+});
+
+export const bankConnections = pgTable("BankConnection", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  basiqConnectionId: text("basiqConnectionId").notNull(),
+  institution: text("institution"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("createdAt", { mode: "date" }).notNull().defaultNow(),
+});
+
+export const bankAccountLinks = pgTable("BankAccountLink", {
+  id: text("id").primaryKey(),
+  bankConnectionId: text("bankConnectionId")
+    .notNull()
+    .references(() => bankConnections.id, { onDelete: "cascade" }),
+  spireAccountId: text("spireAccountId").references(() => accounts.id, {
+    onDelete: "set null",
+  }),
+  basiqAccountId: text("basiqAccountId").notNull().unique(),
+  basiqAccountName: text("basiqAccountName").notNull(),
+  lastSyncedAt: timestamp("lastSyncedAt", { mode: "date" }),
 });
 
 export const incomes = pgTable("Income", {
@@ -204,6 +229,17 @@ export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   bills: many(bills),
   goals: many(goals),
+  bankConnections: many(bankConnections),
+}));
+
+export const bankConnectionsRelations = relations(bankConnections, ({ one, many }) => ({
+  user: one(users, { fields: [bankConnections.userId], references: [users.id] }),
+  accountLinks: many(bankAccountLinks),
+}));
+
+export const bankAccountLinksRelations = relations(bankAccountLinks, ({ one }) => ({
+  bankConnection: one(bankConnections, { fields: [bankAccountLinks.bankConnectionId], references: [bankConnections.id] }),
+  spireAccount: one(accounts, { fields: [bankAccountLinks.spireAccountId], references: [accounts.id] }),
 }));
 
 export const incomesRelations = relations(incomes, ({ one, many }) => ({
